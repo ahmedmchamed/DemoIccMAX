@@ -6,19 +6,15 @@ project(BasicICCDemo
 function(add_source_directories)
 
     cmake_parse_arguments(
-        PARSE_ARGV 0
-        ARG
-        "" "CMP_ENTRY_POINTS" "SOURCE_DIRECTORIES"
+            PARSE_ARGV 0
+            ARG
+            "" "CMP_ENTRY_POINTS" "SOURCE_DIRECTORIES"
     )
-    foreach (cmp_entry_point ${ARG_CMP_ENTRY_POINT})
-        message(${cmp_entry_point})
-        add_executable(${cmp_entry_point})
-    endforeach ()
 
-    foreach(source ${ARG_SOURCE_DIRECTORIES})
+    foreach (source ${ARG_SOURCE_DIRECTORIES})
         message(${source})
         add_subdirectory(${source})
-    endforeach()
+    endforeach ()
 
 endfunction()
 
@@ -27,9 +23,6 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_source_directories(
-    CMP_ENTRY_POINTS
-        ${PROJECT_SOURCE_DIR}/src/Components/IccRoundTrip/CmpEntry/IccRoundTripCmpEntry.cpp
-
     SOURCE_DIRECTORIES
         "${PROJECT_SOURCE_DIR}/src/Utilities"
         "${PROJECT_SOURCE_DIR}/src/Components/IccRoundTrip"

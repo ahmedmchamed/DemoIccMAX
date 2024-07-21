@@ -6,14 +6,20 @@
 #include "IccPrmg.h"
 #include "IccProfLibVer.h"
 
-CIccMinMaxEval::CIccMinMaxEval()
+CIccMinMaxEval::CIccMinMaxEval() :
+  minDE1{ 10000 },
+  minDE2{ 10000 },
+  maxDE1{ -1 },
+  maxDE2{ -1 },
+  num3{ 0 },
+  m_nTotal{ 0 },
+  maxLab1{},
+  maxLab2{},
+  sum1{ 0 },
+  sum2{ 0 },
+  num1{ 0.0 },
+  num2{ 0.0 }
 {
-  minDE1 = minDE2 = 10000;
-  maxDE1 = maxDE2 = -1;
-  sum1 = sum2 = 0;
-  num1 = num2 = 0.0;
-  num3 = m_nTotal = 0;
-
   memset(&maxLab1[0], 0, sizeof(maxLab1));
   memset(&maxLab2[0], 0, sizeof(maxLab2));
 }
