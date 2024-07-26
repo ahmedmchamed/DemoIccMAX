@@ -68,16 +68,13 @@ Copyright:  (c) see ICC Software License
 //
 //////////////////////////////////////////////////////////////////////
 
-#include <math.h>
+#include <cmath>
 #include "IccEval.h"
 #include "IccTag.h"
 
 #ifdef USEREFICCMAXNAMESPACE
 namespace refIccMAX {
 #endif
-
-static const icFloatNumber SMALLNUM = (icFloatNumber)0.0001;
-static const icFloatNumber LESSTHANONE = (icFloatNumber)(1.0 - SMALLNUM);
 
 icStatusCMM CIccEvalCompare::EvaluateProfile(CIccProfile *pProfile, icUInt8Number nGran/* =0 */,
                                              icRenderingIntent nIntent/* =icUnknownIntent */, icXformInterp nInterp/* =icInterpLinear */,

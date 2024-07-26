@@ -1,5 +1,5 @@
-#include <stdio.h>
-#include <math.h>
+#include <cstdio>
+#include <cmath>
 #include "IccRoundTrip.h"
 #include "IccUtil.h"
 #include "IccEval.h"

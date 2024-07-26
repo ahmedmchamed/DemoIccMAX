@@ -294,20 +294,6 @@ icStatusCMM CIccPRMG::EvaluateProfile(CIccProfile *pProfile, icRenderingIntent n
   return icCmmStatOk;
 }
 
-icStatusCMM CIccPRMG::EvaluateProfile(const icChar *szProfilePath, icRenderingIntent nIntent/* =icUnknownIntent */, 
-                                             icXformInterp nInterp/* =icInterpLinear */, bool buseMpeTags/* =true */)
-{
-  CIccProfile *pProfile = ReadIccProfile(szProfilePath);
-
-  if (!pProfile) 
-    return icCmmStatCantOpenProfile;
-
-  icStatusCMM result = EvaluateProfile(pProfile, nIntent, nInterp, buseMpeTags);
-
-  delete pProfile;
-
-  return result;
-}
 
 
 #ifdef USEREFICCMAXNAMESPACE

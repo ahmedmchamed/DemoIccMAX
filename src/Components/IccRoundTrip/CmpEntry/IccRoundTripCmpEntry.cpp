@@ -1,14 +1,33 @@
 #include "IccRoundTrip.h"
-#include <stdio.h>
+#include <cstdio>
 #include <iostream>
-#include <math.h>
+#include <cmath>
+#include <vector>
+#include <cstdint>
+#include <iostream>
+#include <fstream>
+#include <string>
 
 int main(int argc, char* argv[])
 {
+  const std::string fileName{ argv[1] };
+
+  if (std::ifstream openFile{fileName}; openFile.is_open()) {
+    std::string currentLine{};
+
+    while (std::getline(openFile, currentLine)) {
+
+    }
+  }
+  else {
+    std::cerr << "\nError opening file: " << fileName << std::endl;
+    return -1;
+  }
+
   if (argc<=1) {
-    printf("Usage: iccRoundTrip profile {rendering_intent=1 {use_mpe=0}}\n");
-    printf("Built with IccProfLib version " ICCPROFLIBVER "\n");
-    printf("  where rendering_intent is (0=perceptual, 1=relative, 2=saturation, 3=absolute)\n");
+    std::cerr << "Usage: iccRoundTrip profile {rendering_intent=1 {use_mpe=0}}" << std::endl;
+    std::cerr << "Built with IccProfLib version " << ICCPROFLIBVER << std::endl;
+    std::cerr << "where rendering_intent is (0=perceptual, 1=relative, 2=saturation, 3=absolute)" << std::endl;
     return -1;
   }
 
@@ -16,10 +35,10 @@ int main(int argc, char* argv[])
   int nUseMPE = 0;
 
   if (argc>2) {
-    nIntent = (icRenderingIntent)atoi(argv[2]);
-    if (argc>3) {
-      nUseMPE = atoi(argv[3]);
-    }
+    nIntent = static_cast<icRenderingIntent>(std::atoi(argv[2]));
+    // if (argc>3) {
+    //   nUseMPE = atoi(argv[3]);
+    // }
   }
 
   CIccMinMaxEval eval;
@@ -27,7 +46,7 @@ int main(int argc, char* argv[])
   icStatusCMM stat = eval.EvaluateProfile(argv[1], 0, nIntent, icInterpLinear, (nUseMPE!=0));
 
   if (stat!=icCmmStatOk) {
-    printf("Unable to perform round trip on '%s'\n", argv[1]);
+    std::cerr << "Unable to perform round trip on " << argv[1] << std::endl;
     return -1;
   }
 
@@ -36,7 +55,7 @@ int main(int argc, char* argv[])
   stat = prmg.EvaluateProfile(argv[1], nIntent, icInterpLinear, (nUseMPE!=0));
 
   if (stat!=icCmmStatOk) {
-    printf("Unable to perform PRMG analysis on '%s'\n", argv[1]);
+    std::cerr << "Unable to perform PRMG analysis on " << argv[1] << std::endl;
     return -1;
   }
 
