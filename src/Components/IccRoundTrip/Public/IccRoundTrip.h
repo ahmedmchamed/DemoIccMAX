@@ -1,20 +1,16 @@
 #ifndef ICC_ROUND_TRIP_H
 #define ICC_ROUND_TRIP_H
 
-#include <stdio.h>
-#include <iostream>
-#include <math.h>
 #include "IccUtil.h"
 #include "IccEval.h"
 #include "IccPrmg.h"
-#include "IccProfLibVer.h"
 
 class CIccMinMaxEval : public CIccEvalCompare
 {
   public:
     CIccMinMaxEval();
 
-    void Compare(icFloatNumber *pixel, icFloatNumber *deviceLab, icFloatNumber *lab1, icFloatNumber *lab2);
+    void Compare(icFloatNumber *pixel, icFloatNumber *deviceLab, icFloatNumber *lab1, icFloatNumber *lab2) override;
 
     icFloatNumber GetMean1() { return sum1 / num1; }
     icFloatNumber GetMean2() { return sum2 / num2; }

@@ -2,21 +2,35 @@
 #include <cstdio>
 #include <iostream>
 #include <cmath>
-#include <vector>
 #include <cstdint>
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <sstream>
+#include "IccProfLibVer.h"
+#include "ColourData.h"
 
 int main(int argc, char* argv[])
 {
   const std::string fileName{ argv[1] };
+  ColourData colourData{};
+  colourData.isDeviceToPcs = static_cast<bool>(argv[2]);
 
   if (std::ifstream openFile{fileName}; openFile.is_open()) {
     std::string currentLine{};
+    std::string rowItem{};
 
     while (std::getline(openFile, currentLine)) {
+      std::istringstream lineStream{currentLine};
+      ColourData::Rows row{};
 
+      while (lineStream >> rowItem) {
+        if (rowItem != std::string{','}) {
+          row.push_back(std::stof(rowItem));
+        }
+      }
+
+      colourData.csvData.push_back(row);
     }
   }
   else {
@@ -35,7 +49,7 @@ int main(int argc, char* argv[])
   int nUseMPE = 0;
 
   if (argc>2) {
-    nIntent = static_cast<icRenderingIntent>(std::atoi(argv[2]));
+    nIntent = static_cast<icRenderingIntent>(std::atoi(argv[3]));
     // if (argc>3) {
     //   nUseMPE = atoi(argv[3]);
     // }

@@ -68,8 +68,8 @@ Copyright:  (c) see ICC Software License
 //
 //////////////////////////////////////////////////////////////////////
 
-#if !defined(_ICCEVAL_H)
-#define _ICCEVAL_H
+#ifndef ICC_EVAL_H
+#define ICC_EVAL_H
 
 #include "IccCmm.h"
 
@@ -80,6 +80,7 @@ namespace refIccMAX {
 
 class CIccEvalCompare {
 public:
+  virtual ~CIccEvalCompare() = default;
   //Create prototype for Compare function that must be implemented by a derived class
   virtual void Compare(icFloatNumber *pPixel, icFloatNumber *deviceLab, icFloatNumber *destLab1, icFloatNumber *destLab2)=0;
 
@@ -96,4 +97,4 @@ public:
 }; //namespace refIccMAX
 #endif
 
-#endif // !defined(_ICCCMM_H)
+#endif

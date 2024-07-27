@@ -4,7 +4,6 @@
 #include "IccUtil.h"
 #include "IccEval.h"
 #include "IccPrmg.h"
-#include "IccProfLibVer.h"
 
 CIccMinMaxEval::CIccMinMaxEval() :
   minDE1{ 10000 },
