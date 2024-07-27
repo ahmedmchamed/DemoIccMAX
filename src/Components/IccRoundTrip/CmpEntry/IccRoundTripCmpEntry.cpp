@@ -24,8 +24,8 @@ int main(int argc, char* argv[])
       std::istringstream lineStream{currentLine};
       ColourData::Rows row{};
 
-      while (lineStream >> rowItem) {
-        if (rowItem != std::string{','}) {
+      while (std::getline(lineStream, rowItem, ',')) {
+        if (rowItem != std::string{"-->"}) {
           row.push_back(std::stof(rowItem));
         }
       }
@@ -49,7 +49,7 @@ int main(int argc, char* argv[])
   int nUseMPE = 0;
 
   if (argc>2) {
-    nIntent = static_cast<icRenderingIntent>(std::atoi(argv[3]));
+    nIntent = static_cast<icRenderingIntent>(std::atoi(argv[4]));
     // if (argc>3) {
     //   nUseMPE = atoi(argv[3]);
     // }
@@ -57,7 +57,7 @@ int main(int argc, char* argv[])
 
   CIccMinMaxEval eval;
 
-  icStatusCMM stat = eval.EvaluateProfile(argv[1], 0, nIntent, icInterpLinear, (nUseMPE!=0));
+  icStatusCMM stat = eval.EvaluateProfile(argv[3], 0, nIntent, icInterpLinear, (nUseMPE!=0));
 
   if (stat!=icCmmStatOk) {
     std::cerr << "Unable to perform round trip on " << argv[1] << std::endl;
@@ -66,16 +66,16 @@ int main(int argc, char* argv[])
 
   CIccPRMG prmg;
 
-  stat = prmg.EvaluateProfile(argv[1], nIntent, icInterpLinear, (nUseMPE!=0));
+  stat = prmg.EvaluateProfile(argv[3], nIntent, icInterpLinear, (nUseMPE!=0));
 
   if (stat!=icCmmStatOk) {
-    std::cerr << "Unable to perform PRMG analysis on " << argv[1] << std::endl;
+    std::cerr << "Unable to perform PRMG analysis on " << argv[3] << std::endl;
     return -1;
   }
 
   CIccInfo info;
 
-  printf("Profile:          '%s'\n", argv[1]);
+  printf("Profile:          '%s'\n", argv[3]);
   printf("Rendering Intent: %s\n", info.GetRenderingIntentName(nIntent));
   printf("Specified Gamut:  %s\n", prmg.m_bPrmgImplied ? "Perceptual Reference Medium Gamut" : "Not Specified");
 
