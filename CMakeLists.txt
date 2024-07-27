@@ -5,15 +5,22 @@ project(BasicICCDemo
 
 function(add_source_directories)
 
+    add_executable(EntryPoint ${CMAKE_CURRENT_LIST_DIR}/src/entrypoint.cpp)
+
     cmake_parse_arguments(
             PARSE_ARGV 0
             ARG
-            "" "CMP_ENTRY_POINTS" "SOURCE_DIRECTORIES"
+            "" "TARGETS" "LIBRARY_DIRECTORIES"
     )
 
-    foreach (source ${ARG_SOURCE_DIRECTORIES})
-        message(${source})
-        add_subdirectory(${source})
+    foreach (library ${ARG_LIBRARY_DIRECTORIES})
+        message(${library})
+        add_subdirectory(${library})
+    endforeach ()
+
+    foreach (target ${ARG_TARGETS})
+        message(${target})
+        target_link_libraries(EntryPoint PUBLIC ${target})
     endforeach ()
 
 endfunction()
@@ -21,9 +28,14 @@ endfunction()
 # Setting the necessary compile flags
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(TARGETS_LIST
+    IccRoundTrip
+    Utilities)
 
 add_source_directories(
-    SOURCE_DIRECTORIES
-        "${PROJECT_SOURCE_DIR}/src/Utilities"
+    TARGETS
+        "${TARGETS_LIST}"
+    LIBRARY_DIRECTORIES
         "${PROJECT_SOURCE_DIR}/src/Components/IccRoundTrip"
+        "${PROJECT_SOURCE_DIR}/src/Utilities"
 )
