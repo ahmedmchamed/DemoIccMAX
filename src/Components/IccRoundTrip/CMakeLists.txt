@@ -5,8 +5,7 @@ file(GLOB_RECURSE sources_list
 
 set(LIBRARY_NAME IccRoundTrip)
 
-add_executable(${LIBRARY_NAME} ${sources_list}
-        Public/ColourData.h)
+add_executable(${LIBRARY_NAME} ${sources_list})
 
 target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_LIST_DIR}/Public)
 
