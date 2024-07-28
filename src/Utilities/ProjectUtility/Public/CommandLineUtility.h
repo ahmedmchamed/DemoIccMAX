@@ -5,21 +5,25 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <utility>
 
 // IccUtility
 #include "ColourData.h"
 
 namespace IccRoundTrip {
     class CommandLineUtility final {
-        private:
-        std::unordered_map<std::string, std::string> mCommandLineArgs;
-
-        public:
+    public:
+        using CommandLineArgValue = std::pair<std::string, ColourData>;
         CommandLineUtility() = default;
         ColourData readFrom(std::string const& fileName);
-        std::string getFileName();
-        void writeTo(std::string const& fileName);
-        void parseCommandLineArgs(std::vector<std::string> const& commandLineArgs);
+        CommandLineArgValue getCommandLineArgValue(std::string const& argKey);
+        ColourData parseCommandLineArgs(std::vector<std::string> const& commandLineArgs);
+
+    private:
+        // Command line args - key is option name, value is
+        // complex type of option value and value's data
+        std::unordered_map<std::string, CommandLineArgValue> mCommandLineArgs;
+
     };
 }
 

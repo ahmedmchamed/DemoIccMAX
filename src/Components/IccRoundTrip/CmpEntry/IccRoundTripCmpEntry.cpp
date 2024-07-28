@@ -2,20 +2,14 @@
 #include "IccRoundTripCmpEntry.h"
 #include <cstdio>
 #include <iostream>
-#include <cmath>
-#include <iostream>
-#include <fstream>
-#include <sstream>
 #include "IccProfLibVer.h"
 #include "CommandLineUtility.h"
-#include "ColourData.h"
 
 namespace IccRoundTrip {
     int run(std::uint16_t argCount, std::vector<std::string> args) {
 
 
-
-        if (argc <= 1) {
+        if (argCount <= 1) {
             std::cerr << "Usage: iccRoundTrip profile {rendering_intent=1 {use_mpe=0}}" << std::endl;
             std::cerr << "Built with IccProfLib version " << ICCPROFLIBVER << std::endl;
             std::cerr << "where rendering_intent is (0=perceptual, 1=relative, 2=saturation, 3=absolute)" << std::endl;
@@ -25,7 +19,7 @@ namespace IccRoundTrip {
         icRenderingIntent nIntent = icRelativeColorimetric;
         int nUseMPE = 0;
 
-        if (argc > 2) {
+        if (argCount > 2) {
             nIntent = static_cast<icRenderingIntent>(std::atoi(argv[4]));
             if (argc>3) {
               nUseMPE = atoi(argv[3]);
