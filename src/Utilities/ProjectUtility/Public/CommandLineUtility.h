@@ -17,6 +17,7 @@ namespace IccRoundTrip {
         public:
         CommandLineUtility() = default;
         ColourData readFrom(std::string const& fileName);
+        std::string getFileName();
         void writeTo(std::string const& fileName);
         void parseCommandLineArgs(std::vector<std::string> const& commandLineArgs);
     };

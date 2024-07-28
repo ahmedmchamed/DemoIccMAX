@@ -1,8 +1,22 @@
+#include <iostream>
 #include "CommandLineUtility.h"
 
 namespace IccRoundTrip {
     ColourData CommandLineUtility::readFrom(std::string const &fileName) {
 
+    }
+
+    std::string CommandLineUtility::getFileName() {
+        std::string fileName{};
+        const auto filenameArgPos{ mCommandLineArgs.find(std::string{ "inputfile" }) };
+        if (filenameArgPos != mCommandLineArgs.end()) {
+            fileName = filenameArgPos->second;
+        }
+        else {
+            std::cerr << "No file input was found for filename " << fileName << std::endl;
+        }
+
+        return fileName;
     }
 
     void CommandLineUtility::writeTo(std::string const &fileName) {
