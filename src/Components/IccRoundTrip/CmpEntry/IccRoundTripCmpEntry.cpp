@@ -14,30 +14,6 @@ namespace IccRoundTrip {
     int run(std::uint16_t argCount, std::vector<std::string> args) {
 
 
-        const std::string fileName{argv[1]};
-        ColourData colourData{};
-        colourData.isDeviceToPcs = static_cast<bool>(argv[2]);
-
-        if (std::ifstream openFile{fileName}; openFile.is_open()) {
-            std::string currentLine{};
-            std::string rowItem{};
-
-            while (std::getline(openFile, currentLine)) {
-                std::istringstream lineStream{currentLine};
-                ColourData::Rows row{};
-
-                while (std::getline(lineStream, rowItem, ',')) {
-                    if (rowItem != std::string{"-->"}) {
-                        row.push_back(std::stof(rowItem));
-                    }
-                }
-
-                colourData.csvData.push_back(row);
-            }
-        } else {
-            std::cerr << "\nError opening file: " << fileName << std::endl;
-            return -1;
-        }
 
         if (argc <= 1) {
             std::cerr << "Usage: iccRoundTrip profile {rendering_intent=1 {use_mpe=0}}" << std::endl;
