@@ -7,10 +7,13 @@
 #include <fstream>
 #include <sstream>
 #include "IccProfLibVer.h"
+#include "CommandLineUtility.h"
 #include "ColourData.h"
 
 namespace IccRoundTrip {
     int run(std::uint16_t argCount, std::vector<std::string> args) {
+
+
         const std::string fileName{argv[1]};
         ColourData colourData{};
         colourData.isDeviceToPcs = static_cast<bool>(argv[2]);
