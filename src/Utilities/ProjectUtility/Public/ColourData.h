@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <vector>
+#include <string>
 
 namespace IccRoundTrip {
     class ColourData {
@@ -20,15 +21,19 @@ namespace IccRoundTrip {
 
         void setCSVTestData(std::vector<Rows> const& testData);
         void setCSVTestData(std::vector<Rows> &&testData);
-        void setRenderingProfile(std::uint32_t profile);
+        void setRenderingIntent(std::uint32_t intent);
         void setDeviceToPcs(std::uint32_t deviceToPcsFlag);
+        void setProfile(std::string const& profilePath);
         [[nodiscard]] std::vector<Rows> getCSVData() const;
-        [[nodiscard]] RenderingIntent getProfile() const;
+        [[nodiscard]] RenderingIntent getRenderIntent() const;
+        [[nodiscard]] bool isDeviceToPcs() const;
+        [[nodiscard]] const char* getProfile() const;
 
     private:
         bool mIsDeviceToPcs{ false };
         std::vector<Rows> mCsvData{};
         RenderingIntent mRenderIntent{ RenderingIntent::RELATIVE };
+        const char* mProfilePath{};
     };
 }
 

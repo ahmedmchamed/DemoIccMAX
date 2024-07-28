@@ -72,6 +72,7 @@ Copyright:  (c) see ICC Software License
 #define ICC_EVAL_H
 
 #include "IccCmm.h"
+#include "ColourData.h"
 
 #ifdef USEREFICCMAXNAMESPACE
 namespace refIccMAX {
@@ -84,11 +85,11 @@ public:
   //Create prototype for Compare function that must be implemented by a derived class
   virtual void Compare(icFloatNumber *pPixel, icFloatNumber *deviceLab, icFloatNumber *destLab1, icFloatNumber *destLab2)=0;
 
-  icStatusCMM ICCPROFLIB_API EvaluateProfile(CIccProfile *pProfile, icUInt8Number nGran=0, 
+  icStatusCMM ICCPROFLIB_API EvaluateProfile(IccRoundTrip::ColourData const &colourData, CIccProfile *pProfile, icUInt8Number nGran=0,
                                              icRenderingIntent nIntent=icUnknownIntent, icXformInterp nInterp=icInterpLinear,
                                              bool buseMpeTags=true);
 
-  icStatusCMM ICCPROFLIB_API EvaluateProfile(const icChar *szProfilePath, icUInt8Number nGran=0, 
+  icStatusCMM ICCPROFLIB_API EvaluateProfile(IccRoundTrip::ColourData const &colourData, const icChar *szProfilePath, icUInt8Number nGran=0,
                                              icRenderingIntent nIntent=icUnknownIntent, icXformInterp nInterp=icInterpLinear,
                                              bool buseMpeTags=true);
 };

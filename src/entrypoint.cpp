@@ -2,9 +2,11 @@
 #include <cstdint>
 #include <vector>
 
-std::uint32_t main(std::uint32_t const argc, char* argv[]) {
+int main(int argc, char* argv[]) {
     std::vector<std::string> commandLineArgs{};
-    for (std::uint32_t i{ 0 }; i < argc; ++i) {
+    // Make sure to skip program name itself by
+    // indexing from 1
+    for (std::uint32_t i{ 1 }; i < argc; ++i) {
         commandLineArgs.emplace_back(argv[i]);
     }
 

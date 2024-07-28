@@ -4,13 +4,12 @@ project(BasicICCDemo
         VERSION 0.1)
 
 function(add_source_directories)
-
     add_executable(EntryPoint ${CMAKE_CURRENT_LIST_DIR}/src/entrypoint.cpp)
 
     cmake_parse_arguments(
-            PARSE_ARGV 0
-            ARG
-            "" "TARGETS" "LIBRARY_DIRECTORIES"
+        PARSE_ARGV 0
+        ARG
+        "" "TARGETS" "LIBRARY_DIRECTORIES"
     )
 
     foreach (library ${ARG_LIBRARY_DIRECTORIES})

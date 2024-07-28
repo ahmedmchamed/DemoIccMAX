@@ -35,12 +35,15 @@ namespace IccRoundTrip {
     }
 
     CommandLineUtility::CommandLineArgValue CommandLineUtility::getCommandLineArgValue(std::string const &argKey) {
-        if (auto foundKey{ mCommandLineArgs.find(argKey) }; foundKey != mCommandLineArgs.end()) {
-            return foundKey->second;
+        CommandLineUtility::CommandLineArgValue result{};
+        if (auto const foundKey{ mCommandLineArgs.find(argKey) }; foundKey != mCommandLineArgs.end()) {
+            result = foundKey->second;
         }
         else {
             std::cerr << "Command line option key not found " << argKey << std::endl;
         }
+
+        return result;
     }
 
     ColourData CommandLineUtility::parseCommandLineArgs(std::vector<std::string> const &commandLineArgs) {
@@ -59,7 +62,7 @@ namespace IccRoundTrip {
             [&colourDataValue, this]
             (std::string const& argKey, std::string const& argValue) {
                 // Convert command line options to lowercase so that
-                // values are all standardised, regardless of user input format
+                // characters are all standardised, regardless of input format
                 for (auto const& letter : argKey) {
                     std::tolower(letter);
                 }
@@ -72,10 +75,10 @@ namespace IccRoundTrip {
                     colourDataValue.setCSVTestData(readFrom(argValue).getCSVData());
                 }
                 else if (argKey == std::string{ "render_intent" }) {
-                    colourDataValue.setRenderingProfile(std::stol(argValue));
+                    colourDataValue.setRenderingIntent(std::stol(argValue));
                 }
                 else if (argKey == std::string{ "profile" }) {
-
+                    colourDataValue.setProfile(argValue);
                 }
                 else if (argKey == std::string{ "devicetopcs" }) {
                     colourDataValue.setDeviceToPcs(std::stol(argValue));

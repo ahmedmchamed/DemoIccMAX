@@ -6,7 +6,7 @@
 #include <string>
 
 namespace IccRoundTrip {
-    int run(std::uint16_t argCount, std::vector<std::string> args);
+    int run(std::uint16_t const argCount, std::vector<std::string> const& args);
 }
 
 #endif

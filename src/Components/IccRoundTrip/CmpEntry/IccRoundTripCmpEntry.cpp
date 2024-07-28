@@ -1,13 +1,15 @@
 #include "IccRoundTrip.h"
 #include "IccRoundTripCmpEntry.h"
+#include "ColourData.h"
 #include <cstdio>
 #include <iostream>
 #include "IccProfLibVer.h"
 #include "CommandLineUtility.h"
 
 namespace IccRoundTrip {
-    int run(std::uint16_t argCount, std::vector<std::string> args) {
-
+    int run(std::uint16_t const argCount, std::vector<std::string> const& args) {
+        CommandLineUtility utility{};
+        ColourData const data{ utility.parseCommandLineArgs(args)};
 
         if (argCount <= 1) {
             std::cerr << "Usage: iccRoundTrip profile {rendering_intent=1 {use_mpe=0}}" << std::endl;
@@ -20,27 +22,27 @@ namespace IccRoundTrip {
         int nUseMPE = 0;
 
         if (argCount > 2) {
-            nIntent = static_cast<icRenderingIntent>(std::atoi(argv[4]));
-            if (argc>3) {
-              nUseMPE = atoi(argv[3]);
-            }
+            nIntent = static_cast<icRenderingIntent>(static_cast<std::uint32_t>(data.getRenderIntent()));
+            // if (argc>3) {
+            //   nUseMPE = atoi(argv[3]);
+            // }
         }
 
         CIccMinMaxEval eval;
 
-        icStatusCMM stat = eval.EvaluateProfile(argv[3], 0, nIntent, icInterpLinear, (nUseMPE != 0));
+        icStatusCMM stat = eval.EvaluateProfile(data, data.getProfile(), 0, nIntent, icInterpLinear, (nUseMPE != 0));
 
         if (stat != icCmmStatOk) {
-            std::cerr << "Unable to perform round trip on " << argv[1] << std::endl;
+            std::cerr << "Unable to perform round trip on " << utility.getCommandLineArgValue(std::string{ "profile" }).first << std::endl;
             return -1;
         }
 
         CIccPRMG prmg;
 
-        stat = prmg.EvaluateProfile(argv[3], nIntent, icInterpLinear, (nUseMPE != 0));
+        stat = prmg.EvaluateProfile(data.getProfile(), nIntent, icInterpLinear, (nUseMPE != 0));
 
         if (stat != icCmmStatOk) {
-            std::cerr << "Unable to perform PRMG analysis on " << argv[3] << std::endl;
+            std::cerr << "Unable to perform PRMG analysis on " << utility.getCommandLineArgValue(std::string{ "profile" }).first << std::endl;
             return -1;
         }
 

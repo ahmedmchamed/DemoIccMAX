@@ -76,7 +76,7 @@ Copyright:  (c) see ICC Software License
 namespace refIccMAX {
 #endif
 
-icStatusCMM CIccEvalCompare::EvaluateProfile(CIccProfile *pProfile, icUInt8Number nGran/* =0 */,
+icStatusCMM CIccEvalCompare::EvaluateProfile(IccRoundTrip::ColourData const &colourData, CIccProfile *pProfile, icUInt8Number nGran/* =0 */,
                                              icRenderingIntent nIntent/* =icUnknownIntent */, icXformInterp nInterp/* =icInterpLinear */,
                                              bool buseMpeTags/* =true */)
 {
@@ -183,7 +183,7 @@ icStatusCMM CIccEvalCompare::EvaluateProfile(CIccProfile *pProfile, icUInt8Numbe
   return icCmmStatOk;
 }
 
-icStatusCMM CIccEvalCompare::EvaluateProfile(const icChar *szProfilePath, icUInt8Number nGrid/* =0 */, icRenderingIntent nIntent/* =icUnknownIntent */, 
+icStatusCMM CIccEvalCompare::EvaluateProfile(IccRoundTrip::ColourData const &colourData, const icChar *szProfilePath, icUInt8Number nGrid/* =0 */, icRenderingIntent nIntent/* =icUnknownIntent */,
                                              icXformInterp nInterp/* =icInterpLinear */, bool buseMpeTags/* =true */)
 {
   CIccProfile *pProfile = ReadIccProfile(szProfilePath);
@@ -191,7 +191,7 @@ icStatusCMM CIccEvalCompare::EvaluateProfile(const icChar *szProfilePath, icUInt
   if (!pProfile) 
     return icCmmStatCantOpenProfile;
 
-  icStatusCMM result = EvaluateProfile(pProfile, nGrid, nIntent, nInterp, buseMpeTags);
+  icStatusCMM result = EvaluateProfile(colourData, pProfile, nGrid, nIntent, nInterp, buseMpeTags);
 
   delete pProfile;
 

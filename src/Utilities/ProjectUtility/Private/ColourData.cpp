@@ -9,19 +9,31 @@ namespace IccRoundTrip {
         mCsvData = std::move(testData);
     }
 
-    void ColourData::setRenderingProfile(std::uint32_t profile) {
-        mRenderIntent = static_cast<RenderingIntent>(profile);
+    void ColourData::setRenderingIntent(std::uint32_t intent) {
+        mRenderIntent = static_cast<RenderingIntent>(intent);
     }
 
     void ColourData::setDeviceToPcs(std::uint32_t deviceToPcsFlag) {
         mIsDeviceToPcs = static_cast<bool>(deviceToPcsFlag);
     }
 
+    void ColourData::setProfile(std::string const &profilePath) {
+        mProfilePath = profilePath.data();
+    }
+
     std::vector<ColourData::Rows> ColourData::getCSVData() const {
         return mCsvData;
     }
 
-    ColourData::RenderingIntent ColourData::getProfile() const {
+    ColourData::RenderingIntent ColourData::getRenderIntent() const {
         return mRenderIntent;
+    }
+
+    bool ColourData::isDeviceToPcs() const {
+        return mIsDeviceToPcs;
+    }
+
+    const char* ColourData::getProfile() const {
+        return mProfilePath;
     }
 }
