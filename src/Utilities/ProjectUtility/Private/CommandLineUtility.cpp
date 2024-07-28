@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cctype>
 #include <fstream>
 #include <sstream>
@@ -60,15 +61,11 @@ namespace IccRoundTrip {
         // arg values according to a given command line option
         auto setCommandLineArgValues{
             [&colourDataValue, this]
-            (std::string const& argKey, std::string const& argValue) {
+            (std::string& argKey, std::string const& argValue) {
                 // Convert command line options to lowercase so that
                 // characters are all standardised, regardless of input format
-                for (auto const& letter : argKey) {
-                    std::tolower(letter);
-                }
-
-                for (auto const& letter : argValue) {
-                    std::tolower(letter);
+                for (auto& letter : argKey) {
+                    letter = std::tolower(static_cast<unsigned char>(letter));
                 }
 
                 if (argKey == std::string{ "csv" }) {
