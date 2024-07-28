@@ -10,102 +10,69 @@
 #include "ColourData.h"
 
 namespace IccRoundTrip {
-    // int run(std::uint16_t argCount, std::vector<std::string> args) {
-    //     const std::string fileName{argv[1]};
-    //     ColourData colourData{};
-    //     colourData.isDeviceToPcs = static_cast<bool>(argv[2]);
-    //
-    //     if (std::ifstream openFile{fileName}; openFile.is_open()) {
-    //         std::string currentLine{};
-    //         std::string rowItem{};
-    //
-    //         while (std::getline(openFile, currentLine)) {
-    //             std::istringstream lineStream{currentLine};
-    //             ColourData::Rows row{};
-    //
-    //             while (std::getline(lineStream, rowItem, ',')) {
-    //                 if (rowItem != std::string{"-->"}) {
-    //                     row.push_back(std::stof(rowItem));
-    //                 }
-    //             }
-    //
-    //             colourData.csvData.push_back(row);
-    //         }
-    //     } else {
-    //         std::cerr << "\nError opening file: " << fileName << std::endl;
-    //         return -1;
-    //     }
-    //
-    //     if (argc <= 1) {
-    //         std::cerr << "Usage: iccRoundTrip profile {rendering_intent=1 {use_mpe=0}}" << std::endl;
-    //         std::cerr << "Built with IccProfLib version " << ICCPROFLIBVER << std::endl;
-    //         std::cerr << "where rendering_intent is (0=perceptual, 1=relative, 2=saturation, 3=absolute)" << std::endl;
-    //         return -1;
-    //     }
-    //
-    //     icRenderingIntent nIntent = icRelativeColorimetric;
-    //     int nUseMPE = 0;
-    //
-    //     if (argc > 2) {
-    //         nIntent = static_cast<icRenderingIntent>(std::atoi(argv[4]));
-    //         if (argc>3) {
-    //           nUseMPE = atoi(argv[3]);
-    //         }
-    //     }
-    //
-    //     CIccMinMaxEval eval;
-    //
-    //     icStatusCMM stat = eval.EvaluateProfile(argv[3], 0, nIntent, icInterpLinear, (nUseMPE != 0));
-    //
-    //     if (stat != icCmmStatOk) {
-    //         std::cerr << "Unable to perform round trip on " << argv[1] << std::endl;
-    //         return -1;
-    //     }
-    //
-    //     CIccPRMG prmg;
-    //
-    //     stat = prmg.EvaluateProfile(argv[3], nIntent, icInterpLinear, (nUseMPE != 0));
-    //
-    //     if (stat != icCmmStatOk) {
-    //         std::cerr << "Unable to perform PRMG analysis on " << argv[3] << std::endl;
-    //         return -1;
-    //     }
-    //
-    //     CIccInfo info;
-    //
-    //     printf("Profile:          '%s'\n", argv[3]);
-    //     printf("Rendering Intent: %s\n", info.GetRenderingIntentName(nIntent));
-    //     printf("Specified Gamut:  %s\n", prmg.m_bPrmgImplied ? "Perceptual Reference Medium Gamut" : "Not Specified");
-    //
-    //     printf("\nRound Trip 1\n");
-    //     printf("------------\n");
-    //     printf("Min DeltaE:    %8.2" ICFLOATSFX "\n", eval.minDE1);
-    //     printf("Mean DeltaE:   %8.2" ICFLOATSFX "\n", eval.GetMean1());
-    //     printf("Max DeltaE:    %8.2" ICFLOATSFX "\n\n", eval.maxDE1);
-    //
-    //     printf("Max L, a, b:   " ICFLOATFMT ", " ICFLOATFMT ", " ICFLOATFMT "\n", eval.maxLab1[0], eval.maxLab1[1],
-    //            eval.maxLab1[2]);
-    //
-    //     printf("\nRound Trip 2\n");
-    //     printf("------------\n");
-    //     printf("Min DeltaE:    %8.2" ICFLOATSFX "\n", eval.minDE2);
-    //     printf("Mean DeltaE:   %8.2" ICFLOATSFX "\n", eval.GetMean2());
-    //     printf("Max DeltaE:    %8.2" ICFLOATSFX "\n\n", eval.maxDE2);
-    //
-    //     printf("Max L, a, b:   " ICFLOATFMT ", " ICFLOATFMT ", " ICFLOATFMT "\n", eval.maxLab2[0], eval.maxLab2[1],
-    //            eval.maxLab2[2]);
-    //
-    //     if (prmg.m_nTotal) {
-    //         printf("\nPRMG Interoperability - Round Trip Results\n");
-    //         printf("------------------------------------------------------\n");
-    //
-    //         printf("DE <= 1.0 (%8u): %5.1f%%\n", prmg.m_nDE1, (float) prmg.m_nDE1 / (float) prmg.m_nTotal * 100.0);
-    //         printf("DE <= 2.0 (%8u): %5.1f%%\n", prmg.m_nDE2, (float) prmg.m_nDE2 / (float) prmg.m_nTotal * 100.0);
-    //         printf("DE <= 3.0 (%8u): %5.1f%%\n", prmg.m_nDE3, (float) prmg.m_nDE3 / (float) prmg.m_nTotal * 100.0);
-    //         printf("DE <= 5.0 (%8u): %5.1f%%\n", prmg.m_nDE5, (float) prmg.m_nDE5 / (float) prmg.m_nTotal * 100.0);
-    //         printf("DE <=10.0 (%8u): %5.1f%%\n", prmg.m_nDE10, (float) prmg.m_nDE10 / (float) prmg.m_nTotal * 100.0);
-    //         printf("Total     (%8u)\n", prmg.m_nTotal);
-    //     }
-    //     return 0;
-    // }
+    int run(std::uint16_t argCount, std::vector<std::string> args) {
+        const std::string fileName{argv[1]};
+        ColourData colourData{};
+        colourData.isDeviceToPcs = static_cast<bool>(argv[2]);
+
+        if (std::ifstream openFile{fileName}; openFile.is_open()) {
+            std::string currentLine{};
+            std::string rowItem{};
+
+            while (std::getline(openFile, currentLine)) {
+                std::istringstream lineStream{currentLine};
+                ColourData::Rows row{};
+
+                while (std::getline(lineStream, rowItem, ',')) {
+                    if (rowItem != std::string{"-->"}) {
+                        row.push_back(std::stof(rowItem));
+                    }
+                }
+
+                colourData.csvData.push_back(row);
+            }
+        } else {
+            std::cerr << "\nError opening file: " << fileName << std::endl;
+            return -1;
+        }
+
+        if (argc <= 1) {
+            std::cerr << "Usage: iccRoundTrip profile {rendering_intent=1 {use_mpe=0}}" << std::endl;
+            std::cerr << "Built with IccProfLib version " << ICCPROFLIBVER << std::endl;
+            std::cerr << "where rendering_intent is (0=perceptual, 1=relative, 2=saturation, 3=absolute)" << std::endl;
+            return -1;
+        }
+
+        icRenderingIntent nIntent = icRelativeColorimetric;
+        int nUseMPE = 0;
+
+        if (argc > 2) {
+            nIntent = static_cast<icRenderingIntent>(std::atoi(argv[4]));
+            if (argc>3) {
+              nUseMPE = atoi(argv[3]);
+            }
+        }
+
+        CIccMinMaxEval eval;
+
+        icStatusCMM stat = eval.EvaluateProfile(argv[3], 0, nIntent, icInterpLinear, (nUseMPE != 0));
+
+        if (stat != icCmmStatOk) {
+            std::cerr << "Unable to perform round trip on " << argv[1] << std::endl;
+            return -1;
+        }
+
+        CIccPRMG prmg;
+
+        stat = prmg.EvaluateProfile(argv[3], nIntent, icInterpLinear, (nUseMPE != 0));
+
+        if (stat != icCmmStatOk) {
+            std::cerr << "Unable to perform PRMG analysis on " << argv[3] << std::endl;
+            return -1;
+        }
+
+        CIccInfo info;
+
+        return 0;
+    }
 }

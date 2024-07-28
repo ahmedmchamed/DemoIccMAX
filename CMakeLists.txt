@@ -28,6 +28,8 @@ endfunction()
 # Setting the necessary compile flags
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Set the targets list - i.e. the requisite components
 set(TARGETS_LIST
     IccRoundTrip
     Utilities)

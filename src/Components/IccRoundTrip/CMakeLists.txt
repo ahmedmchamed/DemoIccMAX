@@ -5,10 +5,7 @@ file(GLOB_RECURSE sources_list
 
 set(LIBRARY_NAME IccRoundTrip)
 
-add_library(${LIBRARY_NAME} ${sources_list}
-        Public/CommandLineUtility.h
-        Private/CommandLineUtility.cpp
-        Public/IccRoundTripCmpEntry.h)
+add_library(${LIBRARY_NAME} ${sources_list})
 
 target_include_directories(${LIBRARY_NAME} PUBLIC ${CMAKE_CURRENT_LIST_DIR}/Public)
 
