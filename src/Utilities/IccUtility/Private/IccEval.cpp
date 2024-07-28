@@ -76,126 +76,136 @@ Copyright:  (c) see ICC Software License
 namespace refIccMAX {
 #endif
 
-icStatusCMM CIccEvalCompare::EvaluateProfile(IccRoundTrip::ColourData const &colourData, CIccProfile *pProfile, icUInt8Number nGran/* =0 */,
-                                             icRenderingIntent nIntent/* =icUnknownIntent */, icXformInterp nInterp/* =icInterpLinear */,
-                                             bool buseMpeTags/* =true */)
+icStatusCMM CIccEvalCompare::EvaluateProfile(
+    IccRoundTrip::ColourData const &colourData,
+    CIccProfile *pProfile,
+    icUInt8Number nGran/* =0 */,
+    icRenderingIntent nIntent/* =icUnknownIntent */,
+    icXformInterp nInterp/* =icInterpLinear */,
+    bool buseMpeTags/* =true */)
 {
-  if (!pProfile)
-  {
-    return icCmmStatCantOpenProfile;
-  }
-
-  if (pProfile->m_Header.deviceClass!=icSigInputClass &&
-    pProfile->m_Header.deviceClass!=icSigDisplayClass &&
-    pProfile->m_Header.deviceClass!=icSigOutputClass &&
-    pProfile->m_Header.deviceClass!=icSigColorSpaceClass)
-  {
-    return icCmmStatInvalidProfile;
-  }
-
-  CIccCmm dev2Lab(icSigUnknownData, icSigLabData);
-  CIccCmm Lab2Dev2Lab(icSigLabData, icSigLabData, false);
-
-  icStatusCMM result;
-
-  result = dev2Lab.AddXform(*pProfile, nIntent, nInterp, NULL, icXformLutColorimetric, buseMpeTags);
-
-  if (result!=icCmmStatOk) {
-    return result;
-  }
-
-  result = dev2Lab.Begin();
-  if (result != icCmmStatOk) {
-    return result;
-  }
-
-  result = Lab2Dev2Lab.AddXform(*pProfile, nIntent, nInterp, NULL, icXformLutColorimetric, buseMpeTags);
-  if (result != icCmmStatOk) {
-    return result;
-  }
-
-  result = Lab2Dev2Lab.AddXform(*pProfile, nIntent, nInterp, NULL, icXformLutColorimetric, buseMpeTags);
-  if (result != icCmmStatOk) {
-    return result;
-  }
-
-  result = Lab2Dev2Lab.Begin();
-  if (result != icCmmStatOk) {
-    return result;
-  }
-
-  icFloatNumber sPixel[15];
-  icFloatNumber devPcs[15], roundPcs1[15], roundPcs2[15];
-
-  int ndim = icGetSpaceSamples(pProfile->m_Header.colorSpace);
-  int ndim1 = ndim+1;
-
-  // determine granularity
-  if (!nGran)
-  {
-    CIccTagLutAtoB* pTag = (CIccTagLutAtoB*)pProfile->FindTag(icSigAToB0Tag+(nIntent==icAbsoluteColorimetric ? icRelativeColorimetric : nIntent));
-    if (!pTag || ndim==3)
-    {
-      nGran = 33;
-    }
-    else {
-      CIccCLUT* pClut = pTag->GetCLUT();
-      if (pClut)
-        nGran = pClut->GridPoints()+2;
-      else
-        nGran = 33;
-    }
-  }
-
-  int i, j;
-  icFloatNumber stepsize = (icFloatNumber)(1.0/(icFloatNumber)(nGran-1));
-  icFloatNumber* steps = new icFloatNumber[ndim1];
-  icFloatNumber nstart = 0.0;
-  icFloatNumber nEnd = (icFloatNumber)(1.0+stepsize/2.0);
-  for(j=0; j<ndim1; j++) {
-    steps[j] = nstart;
-  }
-
-  while(steps[0]==nstart) {
-    for(j=0; j<ndim; j++) {
-      sPixel[j] = icMin(steps[j+1],1.0);
-    }
-    steps[ndim] = (steps[ndim]+stepsize);
-    for(i=ndim; i>=0; i--) {
-      if(steps[i]>nEnd) {
-        steps[i] = nstart;
-        steps[i-1] = (steps[i-1]+stepsize);
-      }
-      else break;
+    if (!pProfile) {
+        return icCmmStatCantOpenProfile;
     }
 
-    dev2Lab.Apply(devPcs, sPixel); //Convert device value to pcs from input table
-    Lab2Dev2Lab.Apply(roundPcs1, devPcs);  //First round trip gets color into output gamut
-    Lab2Dev2Lab.Apply(roundPcs2, roundPcs1);  //Second round trip find reproducibility error
+    if (pProfile->m_Header.deviceClass != icSigInputClass &&
+        pProfile->m_Header.deviceClass != icSigDisplayClass &&
+        pProfile->m_Header.deviceClass != icSigOutputClass &&
+        pProfile->m_Header.deviceClass != icSigColorSpaceClass) {
+        return icCmmStatInvalidProfile;
+    }
 
-    icLabFromPcs(devPcs);
-    icLabFromPcs(roundPcs1);
-    icLabFromPcs(roundPcs2);
+    CIccCmm profileApplier(
+        colourData.isDeviceToPcs() ? icSigUnknownData : icSigLabData,
+        colourData.isDeviceToPcs() ? icSigLabData : pProfile->m_Header.colorSpace,
+        colourData.isDeviceToPcs()
+    );
 
-    Compare(sPixel, devPcs, roundPcs1, roundPcs2);
-  }
-  
-  return icCmmStatOk;
+    CIccCmm Lab2Dev2Lab(icSigLabData, icSigLabData, false);
+
+    icStatusCMM result;
+
+    result = profileApplier.AddXform(*pProfile, nIntent, nInterp, nullptr, icXformLutColorimetric, buseMpeTags);
+
+    if (result != icCmmStatOk) {
+        return result;
+    }
+
+    result = profileApplier.Begin();
+    if (result != icCmmStatOk) {
+        return result;
+    }
+
+    result = Lab2Dev2Lab.AddXform(*pProfile, nIntent, nInterp, nullptr, icXformLutColorimetric, buseMpeTags);
+    if (result != icCmmStatOk) {
+        return result;
+    }
+
+    result = Lab2Dev2Lab.AddXform(*pProfile, nIntent, nInterp, NULL, icXformLutColorimetric, buseMpeTags);
+    if (result != icCmmStatOk) {
+        return result;
+    }
+
+    result = Lab2Dev2Lab.Begin();
+    if (result != icCmmStatOk) {
+        return result;
+    }
+
+    icFloatNumber sPixel[15];
+    icFloatNumber devPcs[15], roundPcs1[15], roundPcs2[15];
+
+    int ndim = icGetSpaceSamples(pProfile->m_Header.colorSpace);
+    int ndim1 = ndim + 1;
+
+    // determine granularity
+    if (!nGran) {
+        CIccTagLutAtoB *pTag = (CIccTagLutAtoB *) pProfile->FindTag(
+            icSigAToB0Tag + (nIntent == icAbsoluteColorimetric ? icRelativeColorimetric : nIntent));
+        if (!pTag || ndim == 3) {
+            nGran = 33;
+        } else {
+            CIccCLUT *pClut = pTag->GetCLUT();
+            if (pClut)
+                nGran = pClut->GridPoints() + 2;
+            else
+                nGran = 33;
+        }
+    }
+
+    int i, j;
+    icFloatNumber stepsize = (icFloatNumber) (1.0 / (icFloatNumber) (nGran - 1));
+    icFloatNumber *steps = new icFloatNumber[ndim1];
+    icFloatNumber nstart = 0.0;
+    icFloatNumber nEnd = (icFloatNumber) (1.0 + stepsize / 2.0);
+
+    for (j = 0; j < ndim1; j++) {
+        steps[j] = nstart;
+    }
+
+    while (steps[0] == nstart) {
+        for (j = 0; j < ndim; j++) {
+            sPixel[j] = icMin(steps[j + 1], 1.0);
+        }
+        steps[ndim] = (steps[ndim] + stepsize);
+        for (i = ndim; i >= 0; i--) {
+            if (steps[i] > nEnd) {
+                steps[i] = nstart;
+                steps[i - 1] = (steps[i - 1] + stepsize);
+            } else break;
+        }
+
+        profileApplier.Apply(devPcs, sPixel); //Convert device value to pcs from input table
+        Lab2Dev2Lab.Apply(roundPcs1, devPcs); //First round trip gets color into output gamut
+        Lab2Dev2Lab.Apply(roundPcs2, roundPcs1); //Second round trip find reproducibility error
+
+        icLabFromPcs(devPcs);
+        icLabFromPcs(roundPcs1);
+        icLabFromPcs(roundPcs2);
+
+        Compare(sPixel, devPcs, roundPcs1, roundPcs2);
+    }
+
+    return icCmmStatOk;
 }
 
-icStatusCMM CIccEvalCompare::EvaluateProfile(IccRoundTrip::ColourData const &colourData, const icChar *szProfilePath, icUInt8Number nGrid/* =0 */, icRenderingIntent nIntent/* =icUnknownIntent */,
-                                             icXformInterp nInterp/* =icInterpLinear */, bool buseMpeTags/* =true */)
+icStatusCMM CIccEvalCompare::EvaluateProfile(
+    IccRoundTrip::ColourData const &colourData,
+    const icChar *szProfilePath,
+    icUInt8Number nGrid/* =0 */,
+    icRenderingIntent nIntent/* =icUnknownIntent */,
+    icXformInterp nInterp/* =icInterpLinear */,
+    bool buseMpeTags/* =true */)
 {
-  CIccProfile *pProfile = ReadIccProfile(szProfilePath);
+CIccProfile *pProfile = ReadIccProfile(szProfilePath);
 
-  if (!pProfile) 
+if (!pProfile)
     return icCmmStatCantOpenProfile;
 
-  icStatusCMM result = EvaluateProfile(colourData, pProfile, nGrid, nIntent, nInterp, buseMpeTags);
+icStatusCMM result = EvaluateProfile(colourData, pProfile, nGrid, nIntent, nInterp, buseMpeTags);
 
-  delete pProfile;
+delete pProfile;
 
-  return result;
+    return result;
 }
 
 #ifdef USEREFICCMAXNAMESPACE
