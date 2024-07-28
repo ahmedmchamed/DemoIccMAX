@@ -18,7 +18,7 @@ namespace IccRoundTrip {
     }
 
     void ColourData::setProfile(std::string const &profilePath) {
-        mProfilePath = profilePath.data();
+        mProfilePath = profilePath;
     }
 
     std::vector<ColourData::Rows> ColourData::getCSVData() const {
@@ -33,7 +33,7 @@ namespace IccRoundTrip {
         return mIsDeviceToPcs;
     }
 
-    const char* ColourData::getProfile() const {
+    std::string ColourData::getProfile() const {
         return mProfilePath;
     }
 }

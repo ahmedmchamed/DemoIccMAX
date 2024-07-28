@@ -27,13 +27,13 @@ namespace IccRoundTrip {
         [[nodiscard]] std::vector<Rows> getCSVData() const;
         [[nodiscard]] RenderingIntent getRenderIntent() const;
         [[nodiscard]] bool isDeviceToPcs() const;
-        [[nodiscard]] const char* getProfile() const;
+        [[nodiscard]] std::string getProfile() const;
 
     private:
         bool mIsDeviceToPcs{ false };
         std::vector<Rows> mCsvData{};
         RenderingIntent mRenderIntent{ RenderingIntent::RELATIVE };
-        const char* mProfilePath{};
+        std::string mProfilePath{};
     };
 }
 

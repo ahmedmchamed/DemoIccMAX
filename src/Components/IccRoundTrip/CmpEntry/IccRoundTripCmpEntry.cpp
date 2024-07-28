@@ -30,7 +30,7 @@ namespace IccRoundTrip {
 
         CIccMinMaxEval eval;
 
-        icStatusCMM stat = eval.EvaluateProfile(data, data.getProfile(), 0, nIntent, icInterpLinear, (nUseMPE != 0));
+        icStatusCMM stat = eval.EvaluateProfile(data, data.getProfile().c_str(), 0, nIntent, icInterpLinear, (nUseMPE != 0));
 
         if (stat != icCmmStatOk) {
             std::cerr << "Unable to perform round trip on " << utility.getCommandLineArgValue(std::string{ "profile" }).first << std::endl;
@@ -39,7 +39,7 @@ namespace IccRoundTrip {
 
         CIccPRMG prmg;
 
-        stat = prmg.EvaluateProfile(data.getProfile(), nIntent, icInterpLinear, (nUseMPE != 0));
+        stat = prmg.EvaluateProfile(data.getProfile().c_str(), nIntent, icInterpLinear, (nUseMPE != 0));
 
         if (stat != icCmmStatOk) {
             std::cerr << "Unable to perform PRMG analysis on " << utility.getCommandLineArgValue(std::string{ "profile" }).first << std::endl;

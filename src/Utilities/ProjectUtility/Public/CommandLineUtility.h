@@ -15,7 +15,7 @@ namespace IccRoundTrip {
     public:
         using CommandLineArgValue = std::pair<std::string, ColourData>;
         CommandLineUtility() = default;
-        static ColourData readFrom(std::string const& fileName);
+        static ColourData readFrom(std::string const& filename);
         CommandLineArgValue getCommandLineArgValue(std::string const& argKey);
         ColourData parseCommandLineArgs(std::vector<std::string> const& commandLineArgs);
 

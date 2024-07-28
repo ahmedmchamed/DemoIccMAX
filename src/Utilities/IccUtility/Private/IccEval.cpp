@@ -69,6 +69,8 @@ Copyright:  (c) see ICC Software License
 //////////////////////////////////////////////////////////////////////
 
 #include <cmath>
+#include <fstream>
+#include "CommandLineUtility.h"
 #include "IccEval.h"
 #include "IccTag.h"
 
@@ -84,6 +86,8 @@ icStatusCMM CIccEvalCompare::EvaluateProfile(
     icXformInterp nInterp/* =icInterpLinear */,
     bool buseMpeTags/* =true */)
 {
+    using Rows = IccRoundTrip::ColourData::Rows;
+
     if (!pProfile) {
         return icCmmStatCantOpenProfile;
     }
@@ -107,82 +111,59 @@ icStatusCMM CIccEvalCompare::EvaluateProfile(
 
     result = profileApplier.AddXform(*pProfile, nIntent, nInterp, nullptr, icXformLutColorimetric, buseMpeTags);
 
-    if (result != icCmmStatOk) {
+    if (result!=icCmmStatOk) {
         return result;
     }
 
     result = profileApplier.Begin();
-    if (result != icCmmStatOk) {
-        return result;
-    }
 
-    result = Lab2Dev2Lab.AddXform(*pProfile, nIntent, nInterp, nullptr, icXformLutColorimetric, buseMpeTags);
-    if (result != icCmmStatOk) {
-        return result;
-    }
-
-    result = Lab2Dev2Lab.AddXform(*pProfile, nIntent, nInterp, NULL, icXformLutColorimetric, buseMpeTags);
-    if (result != icCmmStatOk) {
-        return result;
-    }
-
-    result = Lab2Dev2Lab.Begin();
     if (result != icCmmStatOk) {
         return result;
     }
 
     icFloatNumber sPixel[15];
-    icFloatNumber devPcs[15], roundPcs1[15], roundPcs2[15];
+    icFloatNumber devPcs[15];
 
-    int ndim = icGetSpaceSamples(pProfile->m_Header.colorSpace);
-    int ndim1 = ndim + 1;
-
-    // determine granularity
-    if (!nGran) {
-        CIccTagLutAtoB *pTag = (CIccTagLutAtoB *) pProfile->FindTag(
-            icSigAToB0Tag + (nIntent == icAbsoluteColorimetric ? icRelativeColorimetric : nIntent));
-        if (!pTag || ndim == 3) {
-            nGran = 33;
-        } else {
-            CIccCLUT *pClut = pTag->GetCLUT();
-            if (pClut)
-                nGran = pClut->GridPoints() + 2;
-            else
-                nGran = 33;
+    std::vector<Rows> outputData;
+    for (const auto &row: colourData.getCSVData()) {
+        for (std::size_t i = 0; i < row.size(); ++i) {
+            sPixel[i] = row[i];
         }
-    }
 
-    int i, j;
-    icFloatNumber stepsize = (icFloatNumber) (1.0 / (icFloatNumber) (nGran - 1));
-    icFloatNumber *steps = new icFloatNumber[ndim1];
-    icFloatNumber nstart = 0.0;
-    icFloatNumber nEnd = (icFloatNumber) (1.0 + stepsize / 2.0);
-
-    for (j = 0; j < ndim1; j++) {
-        steps[j] = nstart;
-    }
-
-    while (steps[0] == nstart) {
-        for (j = 0; j < ndim; j++) {
-            sPixel[j] = icMin(steps[j + 1], 1.0);
-        }
-        steps[ndim] = (steps[ndim] + stepsize);
-        for (i = ndim; i >= 0; i--) {
-            if (steps[i] > nEnd) {
-                steps[i] = nstart;
-                steps[i - 1] = (steps[i - 1] + stepsize);
-            } else break;
+        if (!colourData.isDeviceToPcs()) {
+            icLabToPcs(sPixel);
         }
 
         profileApplier.Apply(devPcs, sPixel); //Convert device value to pcs from input table
-        Lab2Dev2Lab.Apply(roundPcs1, devPcs); //First round trip gets color into output gamut
-        Lab2Dev2Lab.Apply(roundPcs2, roundPcs1); //Second round trip find reproducibility error
 
-        icLabFromPcs(devPcs);
-        icLabFromPcs(roundPcs1);
-        icLabFromPcs(roundPcs2);
+        if (colourData.isDeviceToPcs()) {
+            icLabFromPcs(devPcs);
+        }
 
-        Compare(sPixel, devPcs, roundPcs1, roundPcs2);
+        std::vector<float> outputValue;
+        for (const auto channel: devPcs) {
+            outputValue.push_back(channel);
+        }
+
+        outputData.push_back(outputValue);
+    }
+
+    std::ofstream fileStream{ "output.csv" };
+    //
+    // FILE *outputFile = fopen("output.csv", "w");
+    // for (const auto outputValue: outputData) {
+    //     for (const auto outputChannel: outputValue) {
+    //         fprintf(outputFile, "%f,", outputChannel);
+    //     }
+    //     fprintf(outputFile, "\n");
+    // }
+    // fclose(outputFile);
+
+    for (auto const& outputValue : outputData) {
+        for (auto const outputChannel : outputValue) {
+            fileStream << outputChannel << ',';
+        }
+        fileStream << std::endl;
     }
 
     return icCmmStatOk;
