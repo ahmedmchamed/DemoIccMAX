@@ -1,4 +1,3 @@
-#include <algorithm>
 #include <cctype>
 #include <fstream>
 #include <sstream>
@@ -6,11 +5,12 @@
 #include "CommandLineUtility.h"
 
 namespace IccRoundTrip {
-    ColourData CommandLineUtility::readFrom(std::string const &fileName) {
+
+    ColourData CommandLineUtility::readFrom(std::filesystem::path const &filePath) {
         ColourData result{};
         std::vector<ColourData::Rows> csvData{};
 
-        if (std::ifstream openFile{fileName}; openFile.is_open()) {
+        if (std::ifstream openFile{filePath}; openFile.is_open()) {
             std::string currentLine{};
             std::string rowItem{};
 
@@ -19,20 +19,40 @@ namespace IccRoundTrip {
                 ColourData::Rows row{};
 
                 while (std::getline(lineStream, rowItem, ',')) {
-                    if (rowItem != std::string{"-->"}) {
-                        row.push_back(std::stof(rowItem));
-                    }
+                    row.push_back(std::stof(rowItem));
                 }
 
                 csvData.push_back(row);
             }
         } else {
-            std::cerr << "\nError opening file: " << fileName << std::endl;
+            std::cerr << "\nError opening file: " << filePath.filename() << std::endl;
         }
 
-        result.setCSVTestData(std::move(csvData));
+        result.setInputCSVData(std::move(csvData));
         return std::move(result);
+    }
 
+    void CommandLineUtility::writeTo(
+        std::filesystem::path const &filePath,
+        std::vector<ColourData::Rows> const& outputData,
+        ColourData const& colourData) {
+
+        std::ofstream fileStream{filePath};
+        auto const inputData{ colourData.getInputCSVData() };
+
+        for (std::uint32_t i{ 0 }, j{ 0 }; i < outputData.size() && j < inputData.size(); ++i, ++j) {
+            for (std::uint32_t l{ 0 }; l < inputData.at(j).size(); ++l) {
+                fileStream << inputData.at(j).at(l) << ',';
+            }
+            fileStream << "-->" << ',';
+
+            for (std::uint32_t k{ 0 }; k < outputData.at(i).size() ; ++k) {
+                fileStream << outputData.at(i).at(k) << ',';
+            }
+            fileStream << std::endl;
+        }
+
+        fileStream.close();
     }
 
     CommandLineUtility::CommandLineArgValue CommandLineUtility::getCommandLineArgValue(std::string const &argKey) {
@@ -68,8 +88,8 @@ namespace IccRoundTrip {
                     letter = std::tolower(static_cast<unsigned char>(letter));
                 }
 
-                if (argKey == std::string{ "csv" }) {
-                    colourDataValue.setCSVTestData(readFrom(argValue).getCSVData());
+                if (argKey == std::string{ "input_file" }) {
+                    colourDataValue.setInputCSVData(readFrom(argValue).getInputCSVData());
                 }
                 else if (argKey == std::string{ "render_intent" }) {
                     colourDataValue.setRenderingIntent(std::stol(argValue));
@@ -79,6 +99,9 @@ namespace IccRoundTrip {
                 }
                 else if (argKey == std::string{ "devicetopcs" }) {
                     colourDataValue.setDeviceToPcs(std::stol(argValue));
+                }
+                else if (argKey == std::string{ "output_to" }) {
+                    colourDataValue.setOutputFile(argValue);
                 }
                 else {
                     std::cerr << "Invalid command line option " << argKey << std::endl;

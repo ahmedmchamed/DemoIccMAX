@@ -1,7 +1,6 @@
 #include "IccRoundTrip.h"
 #include "IccRoundTripCmpEntry.h"
 #include "ColourData.h"
-#include <cstdio>
 #include <iostream>
 #include "IccProfLibVer.h"
 #include "CommandLineUtility.h"

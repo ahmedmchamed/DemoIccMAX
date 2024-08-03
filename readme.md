@@ -7,10 +7,11 @@
 * Ensure that you have all of your required files in the same directory that you run `EntryPoint` from
 * Available command line options are:
     * `-profile=your_profile.icc`
-    * `-csv=your_csv_file.csv`
+    * `-input_file=` - enter either a single filename or an absolute path
     * `-deviceToPcs=...` - available values are `1` or `0` depending on whether attribute is `true` or `false` respectively
     * `-render_intent=...` - available options are:
         * `0` - Perceptual
         * `1` - Relative
         * `2` - Saturation
         * `3` - Absolute
+    * `-output_to=...` - enter either a single filename or an absolute path

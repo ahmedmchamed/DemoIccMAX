@@ -2,6 +2,7 @@
 #define COLOUR_DATA_H
 
 #include <cstdint>
+#include <filesystem>
 #include <vector>
 #include <string>
 
@@ -19,19 +20,22 @@ namespace IccRoundTrip {
             ABSOLUTE=3
         };
 
-        void setCSVTestData(std::vector<Rows> const& testData);
-        void setCSVTestData(std::vector<Rows> &&testData);
+        void setInputCSVData(std::vector<Rows> const& inputData);
+        void setInputCSVData(std::vector<Rows> &&inputData);
+        void setOutputFile(std::filesystem::path const& file);
         void setRenderingIntent(std::uint32_t intent);
         void setDeviceToPcs(std::uint32_t deviceToPcsFlag);
         void setProfile(std::string const& profilePath);
-        [[nodiscard]] std::vector<Rows> getCSVData() const;
+        [[nodiscard]] std::vector<Rows> getInputCSVData() const;
+        [[nodiscard]] std::string getOutputFile() const;
         [[nodiscard]] RenderingIntent getRenderIntent() const;
         [[nodiscard]] bool isDeviceToPcs() const;
         [[nodiscard]] std::string getProfile() const;
 
     private:
         bool mIsDeviceToPcs{ false };
-        std::vector<Rows> mCsvData{};
+        std::vector<Rows> mInputCsvData{};
+        std::filesystem::path mOutputFile{};
         RenderingIntent mRenderIntent{ RenderingIntent::RELATIVE };
         std::string mProfilePath{};
     };

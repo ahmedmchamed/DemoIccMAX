@@ -3,9 +3,10 @@
 
 // Utility
 #include <string>
+#include <filesystem>
 #include <unordered_map>
-#include <vector>
 #include <utility>
+#include <vector>
 
 // IccUtility
 #include "ColourData.h"
@@ -15,7 +16,11 @@ namespace IccRoundTrip {
     public:
         using CommandLineArgValue = std::pair<std::string, ColourData>;
         CommandLineUtility() = default;
-        static ColourData readFrom(std::string const& filename);
+        static ColourData readFrom(std::filesystem::path const& filePath);
+        static void writeTo(
+            std::filesystem::path const& filePath,
+            std::vector<ColourData::Rows> const& outputData,
+            ColourData const& colourData);
         CommandLineArgValue getCommandLineArgValue(std::string const& argKey);
         ColourData parseCommandLineArgs(std::vector<std::string> const& commandLineArgs);
 

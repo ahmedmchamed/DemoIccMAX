@@ -107,9 +107,7 @@ icStatusCMM CIccEvalCompare::EvaluateProfile(
 
     CIccCmm Lab2Dev2Lab(icSigLabData, icSigLabData, false);
 
-    icStatusCMM result;
-
-    result = profileApplier.AddXform(*pProfile, nIntent, nInterp, nullptr, icXformLutColorimetric, buseMpeTags);
+    icStatusCMM result{ profileApplier.AddXform(*pProfile, nIntent, nInterp, nullptr, icXformLutColorimetric, buseMpeTags) };
 
     if (result!=icCmmStatOk) {
         return result;
@@ -125,7 +123,7 @@ icStatusCMM CIccEvalCompare::EvaluateProfile(
     icFloatNumber devPcs[15];
 
     std::vector<Rows> outputData;
-    for (const auto &row: colourData.getCSVData()) {
+    for (const auto &row: colourData.getInputCSVData()) {
         for (std::size_t i = 0; i < row.size(); ++i) {
             sPixel[i] = row[i];
         }
@@ -148,23 +146,7 @@ icStatusCMM CIccEvalCompare::EvaluateProfile(
         outputData.push_back(outputValue);
     }
 
-    std::ofstream fileStream{ "output.csv" };
-    //
-    // FILE *outputFile = fopen("output.csv", "w");
-    // for (const auto outputValue: outputData) {
-    //     for (const auto outputChannel: outputValue) {
-    //         fprintf(outputFile, "%f,", outputChannel);
-    //     }
-    //     fprintf(outputFile, "\n");
-    // }
-    // fclose(outputFile);
-
-    for (auto const& outputValue : outputData) {
-        for (auto const outputChannel : outputValue) {
-            fileStream << outputChannel << ',';
-        }
-        fileStream << std::endl;
-    }
+    IccRoundTrip::CommandLineUtility::writeTo(colourData.getOutputFile(), outputData, colourData);
 
     return icCmmStatOk;
 }

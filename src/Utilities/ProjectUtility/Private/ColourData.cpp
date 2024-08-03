@@ -1,12 +1,16 @@
 #include "ColourData.h"
 
 namespace IccRoundTrip {
-    void ColourData::setCSVTestData(std::vector<Rows> const& testData) {
-        mCsvData = testData;
+    void ColourData::setInputCSVData(std::vector<Rows> const& inputData) {
+        mInputCsvData = inputData;
     }
 
-    void ColourData::setCSVTestData(std::vector<Rows> &&testData) {
-        mCsvData = std::move(testData);
+    void ColourData::setInputCSVData(std::vector<Rows> &&inputData) {
+        mInputCsvData = std::move(inputData);
+    }
+
+    void ColourData::setOutputFile(std::filesystem::path const &file) {
+        mOutputFile = file;
     }
 
     void ColourData::setRenderingIntent(std::uint32_t intent) {
@@ -21,8 +25,12 @@ namespace IccRoundTrip {
         mProfilePath = profilePath;
     }
 
-    std::vector<ColourData::Rows> ColourData::getCSVData() const {
-        return mCsvData;
+    std::vector<ColourData::Rows> ColourData::getInputCSVData() const {
+        return mInputCsvData;
+    }
+
+    std::string ColourData::getOutputFile() const {
+        return mOutputFile;
     }
 
     ColourData::RenderingIntent ColourData::getRenderIntent() const {
