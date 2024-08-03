@@ -4,7 +4,7 @@
 * This will create the `EntryPoint` executable in the same directory
 
 ## Running the project
-* Ensure that you have all of your required files in the same directory that you run `EntryPoint` from
+* Please ensure that you have your `profile_name.icc` file in the same directory that you run `EntryPoint` from
 * Available command line options are:
     * `-profile=your_profile.icc`
     * `-input_file=` - enter either a single filename or an absolute path
