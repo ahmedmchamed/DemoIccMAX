@@ -1,6 +1,6 @@
 #include "ColourData.h"
 
-namespace IccRoundTrip {
+namespace IccConvert {
     void ColourData::setInputCSVData(std::vector<Rows> const& inputData) {
         mInputCsvData = inputData;
     }

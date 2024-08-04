@@ -6,7 +6,7 @@
 #include <vector>
 #include <string>
 
-namespace IccRoundTrip {
+namespace IccConvert {
     class ColourData {
     public:
         ColourData() = default;

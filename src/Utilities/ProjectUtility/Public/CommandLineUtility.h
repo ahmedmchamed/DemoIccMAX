@@ -11,7 +11,7 @@
 // IccUtility
 #include "ColourData.h"
 
-namespace IccRoundTrip {
+namespace IccConvert {
     class CommandLineUtility final {
     public:
         using CommandLineArgValue = std::pair<std::string, ColourData>;
