@@ -27,7 +27,7 @@ namespace IccRoundTrip {
         void setDeviceToPcs(std::uint32_t deviceToPcsFlag);
         void setProfile(std::string const& profilePath);
         [[nodiscard]] std::vector<Rows> getInputCSVData() const;
-        [[nodiscard]] std::string getOutputFile() const;
+        [[nodiscard]] std::filesystem::path getOutputFile() const;
         [[nodiscard]] RenderingIntent getRenderIntent() const;
         [[nodiscard]] bool isDeviceToPcs() const;
         [[nodiscard]] std::string getProfile() const;
