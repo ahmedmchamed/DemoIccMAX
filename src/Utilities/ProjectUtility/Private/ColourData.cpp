@@ -29,7 +29,7 @@ namespace IccRoundTrip {
         return mInputCsvData;
     }
 
-    std::string ColourData::getOutputFile() const {
+    std::filesystem::path ColourData::getOutputFile() const {
         return mOutputFile;
     }
 
