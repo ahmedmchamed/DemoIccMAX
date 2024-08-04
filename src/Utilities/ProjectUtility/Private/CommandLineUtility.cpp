@@ -4,7 +4,7 @@
 #include <iostream>
 #include "CommandLineUtility.h"
 
-namespace IccRoundTrip {
+namespace IccConvert {
 
     ColourData CommandLineUtility::readFrom(std::filesystem::path const &filePath) {
         ColourData result{};
@@ -47,7 +47,7 @@ namespace IccRoundTrip {
             fileStream << "-->" << ',';
 
             for (std::uint32_t k{ 0 }; k < outputData.at(i).size() ; ++k) {
-                fileStream << outputData.at(i).at(k) << ',';
+                fileStream << std::fixed << outputData.at(i).at(k) << ',';
             }
             fileStream << std::endl;
         }

@@ -68,11 +68,10 @@ Copyright:  (c) see ICC Software License
 //
 //////////////////////////////////////////////////////////////////////
 
-#ifndef ICC_EVAL_H
-#define ICC_EVAL_H
+#if !defined(_ICCEVAL_H)
+#define _ICCEVAL_H
 
 #include "IccCmm.h"
-#include "ColourData.h"
 
 #ifdef USEREFICCMAXNAMESPACE
 namespace refIccMAX {
@@ -81,15 +80,14 @@ namespace refIccMAX {
 
 class CIccEvalCompare {
 public:
-  virtual ~CIccEvalCompare() = default;
   //Create prototype for Compare function that must be implemented by a derived class
   virtual void Compare(icFloatNumber *pPixel, icFloatNumber *deviceLab, icFloatNumber *destLab1, icFloatNumber *destLab2)=0;
 
-  icStatusCMM ICCPROFLIB_API EvaluateProfile(IccRoundTrip::ColourData const &colourData, CIccProfile *pProfile, icUInt8Number nGran=0,
+  icStatusCMM ICCPROFLIB_API EvaluateProfile(CIccProfile *pProfile, icUInt8Number nGran=0,
                                              icRenderingIntent nIntent=icUnknownIntent, icXformInterp nInterp=icInterpLinear,
                                              bool buseMpeTags=true);
 
-  icStatusCMM ICCPROFLIB_API EvaluateProfile(IccRoundTrip::ColourData const &colourData, const icChar *szProfilePath, icUInt8Number nGran=0,
+  icStatusCMM ICCPROFLIB_API EvaluateProfile(const icChar *szProfilePath, icUInt8Number nGran=0,
                                              icRenderingIntent nIntent=icUnknownIntent, icXformInterp nInterp=icInterpLinear,
                                              bool buseMpeTags=true);
 };
@@ -98,4 +96,4 @@ public:
 }; //namespace refIccMAX
 #endif
 
-#endif
+#endif // !defined(_ICCCMM_H)
