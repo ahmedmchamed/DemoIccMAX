@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net8.0</TargetFramework>
+        <RootNamespace>test_data_generator</RootNamespace>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Folder Include="profiles\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Wacton.Unicolour" Version="4.6.0" />
+    </ItemGroup>
+
+</Project>
