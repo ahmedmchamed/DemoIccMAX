@@ -37,10 +37,16 @@ void ProcessProfile(Profile profile)
     {
         "RGB" => 3,
         "CMYK" => 4,
-        "7Clr" => 7,
+        "7CLR" => 7,
         _ => throw new NotSupportedException($"Device space {profile.Header.DataColourSpace}")
     };
+    
+    GenerateDeviceToPcsData(profile, pcsChannels, deviceChannels);
+    GeneratePcsToDeviceData(profile, pcsChannels, deviceChannels);
+}
 
+void GenerateDeviceToPcsData(Profile profile, int pcsChannels, int deviceChannels)
+{
     // standard range
     var deviceToPcsValuesPerChannel = deviceChannels <= 4 ? 6 : 3;
     var deviceToPcsVectors = GenerateVectorsOfBaseN(deviceChannels, deviceToPcsValuesPerChannel);
@@ -60,18 +66,50 @@ void ProcessProfile(Profile profile)
         upperBound[i] = 1.1;
         deviceToPcsRows.Add(string.Join(",", upperBound));
     }
+    
+    GenerateData(profile, deviceToPcsRows, deviceToPcs: true);
+}
 
+void GeneratePcsToDeviceData(Profile profile, int pcsChannels, int deviceChannels)
+{
+    int[] lValues = [0, 20, 40, 60, 80, 100];
+    int[] aValues = [-127, -100, -75, -50, -25, 0, 25, 50, 75, 100, 128];
+    int[] bValues = [-127, -100, -75, -50, -25, 0, 25, 50, 75, 100, 128];
+
+    var pcsToDeviceRows = new List<string>();
+    
+    // standard range
+    foreach (var l in lValues)
+    foreach (var a in aValues)
+    foreach (var b in bValues)
+    {
+        pcsToDeviceRows.Add($"{l},{a},{b}");
+    }
+    
+    // each device channel out of range
+    pcsToDeviceRows.AddRange(
+    [
+        "-1,0,0",
+        "101,0,0",
+        "50,-130,0",
+        "50,130,0",
+        "50,0,-130",
+        "50,0,130"
+    ]);
+    
+    GenerateData(profile, pcsToDeviceRows, deviceToPcs: false);
+}
+
+void GenerateData(Profile profile, List<string> inputRows, bool deviceToPcs)
+{
     const string inputCsvRelativePath = "./input.csv";
     var inputCsvPath = Path.GetFullPath(inputCsvRelativePath);
-    
-    File.WriteAllLines(inputCsvPath, deviceToPcsRows);
+    File.WriteAllLines(inputCsvPath, inputRows);
 
-    // TODO: generate PCS-to-device data
-    var deviceToPcs = true;
     for (var intent = 0; intent <= 3; intent++)
     {
         var profilePath = profile.FileInfo.FullName;
-        var outputCsvFilename = $"./{Path.GetFileNameWithoutExtension(profilePath)}_ToPcs_ICC-{intent}.csv";
+        var outputCsvFilename = $"./{Path.GetFileNameWithoutExtension(profilePath)}_{(deviceToPcs ? "ToPcs" : "ToDevice")}_ICC-{intent}.csv";
         var outputCsvPath = Path.GetFullPath(outputCsvFilename);
 
         var arguments = $"-profile=\"{profilePath}\" -deviceToPcs={(deviceToPcs ? "1" : "0")} -render_intent={intent} -input_file=\"{inputCsvPath}\" -output_to=\"{outputCsvPath}\"";

@@ -74,7 +74,7 @@ int main(int argc, char *argv[]) {
     std::vector<IccConvert::ColourData::Rows> outputData;
     for (const auto &row: colourData.getInputCSVData()) {
         for (std::size_t i = 0; i < row.size(); ++i) {
-            srcPixel[i] = row[i];
+            srcPixel[i] = static_cast<icFloatNumber>(row[i]);
         }
 
         // this assumes source is LAB
@@ -89,7 +89,7 @@ int main(int argc, char *argv[]) {
             icLabFromPcs(dstPixel);
         }
 
-        std::vector<float> outputValue;
+        std::vector<double> outputValue;
         for (std::size_t i = 0; i < outputChannels; ++i) {
             outputValue.push_back(dstPixel[i]);
         }

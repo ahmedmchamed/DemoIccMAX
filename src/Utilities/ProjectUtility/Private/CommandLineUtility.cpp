@@ -18,7 +18,7 @@ namespace IccConvert {
                 ColourData::Rows row{};
 
                 while (std::getline(lineStream, rowItem, ',')) {
-                    row.push_back(std::stof(rowItem));
+                    row.push_back(std::stod(rowItem));
                 }
 
                 csvData.push_back(row);
@@ -40,7 +40,7 @@ namespace IccConvert {
 
         for (std::uint32_t i{0}, j{0}; i < outputData.size() && j < inputData.size(); ++i, ++j) {
             for (std::uint32_t l{0}; l < inputData.at(j).size(); ++l) {
-                fileStream << inputData.at(j).at(l) << ',';
+                fileStream << std::defaultfloat << inputData.at(j).at(l) << ',';
             }
             fileStream << "-->";
 
