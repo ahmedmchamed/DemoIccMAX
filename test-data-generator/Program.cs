@@ -12,18 +12,35 @@ var converterPath = Path.GetFullPath(Path.Combine(exeLocation, converterRelative
 var files = Directory.GetFiles(profilesPath, "*.icc");
 foreach (var file in files)
 {
-    if (!file.Contains("Fogra39")) continue;
     var profile = new Profile(file);
+    try
+    {
+        ProcessProfile(profile);
+    }
+    catch (Exception e)
+    {
+        Console.WriteLine($"Could not process profile: {Path.GetFileName(file)}{Environment.NewLine}{e}");
+    }
+}
+
+return;
+
+void ProcessProfile(Profile profile)
+{
+    var pcsChannels = profile.Header.Pcs switch
+    {
+        "Lab " => 3,
+        _ => throw new NotSupportedException($"PCS {profile.Header.Pcs}")
+    };
 
     var deviceChannels = profile.Header.DataColourSpace switch
     {
         "RGB" => 3,
         "CMYK" => 4,
-        "7Clr" => 7
+        "7Clr" => 7,
+        _ => throw new NotSupportedException($"Device space {profile.Header.DataColourSpace}")
     };
 
-    var pcsChannels = 3; // always to/from LAB
-    
     // standard range
     var deviceToPcsValuesPerChannel = deviceChannels <= 4 ? 6 : 3;
     var deviceToPcsVectors = GenerateVectorsOfBaseN(deviceChannels, deviceToPcsValuesPerChannel);
@@ -49,17 +66,15 @@ foreach (var file in files)
     
     File.WriteAllLines(inputCsvPath, deviceToPcsRows);
 
-    // ICC file needs to be next to EntryPoint.exe - needs improvement
-    var copiedIccFileLocation = Path.Combine(Path.GetDirectoryName(converterPath)!, Path.GetFileName(file));
-    File.Copy(file, copiedIccFileLocation, overwrite: true);
-    
+    // TODO: generate PCS-to-device data
+    var deviceToPcs = true;
     for (var intent = 0; intent <= 3; intent++)
     {
-        var outputCsvFilename = $"./{Path.GetFileNameWithoutExtension(file)}_ToPcs_ICC-{intent}.csv";
+        var profilePath = profile.FileInfo.FullName;
+        var outputCsvFilename = $"./{Path.GetFileNameWithoutExtension(profilePath)}_ToPcs_ICC-{intent}.csv";
         var outputCsvPath = Path.GetFullPath(outputCsvFilename);
 
-        // e.g. -profile=Coated_Fogra39L_VIGC_300.icc -input_file=input.csv -deviceToPcs=0 -render_intent=1 -output_to=output.csv
-        var arguments = $"-profile={Path.GetFileName(copiedIccFileLocation)} -deviceToPcs=0 -render_intent={intent} -input_file=\"{inputCsvPath}\" -output_to=\"{outputCsvPath}\"";
+        var arguments = $"-profile=\"{profilePath}\" -deviceToPcs={(deviceToPcs ? "1" : "0")} -render_intent={intent} -input_file=\"{inputCsvPath}\" -output_to=\"{outputCsvPath}\"";
         
         var process = new Process
         {
@@ -78,8 +93,6 @@ foreach (var file in files)
         process.WaitForExit();
     }
 }
-
-return;
 
 // copied from Wacton.Unicolour.Icc
 static List<int[]> GenerateVectorsOfBaseN(int n, int @base)

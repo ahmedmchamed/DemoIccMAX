@@ -5,7 +5,6 @@
 #include "CommandLineUtility.h"
 
 namespace IccConvert {
-
     ColourData CommandLineUtility::readFrom(std::filesystem::path const &filePath) {
         ColourData result{};
         std::vector<ColourData::Rows> csvData{};
@@ -34,20 +33,19 @@ namespace IccConvert {
 
     void CommandLineUtility::writeTo(
         std::filesystem::path const &filePath,
-        std::vector<ColourData::Rows> const& outputData,
-        ColourData const& colourData) {
-
+        std::vector<ColourData::Rows> const &outputData,
+        ColourData const &colourData) {
         std::ofstream fileStream{filePath};
-        auto const inputData{ colourData.getInputCSVData() };
+        auto const inputData{colourData.getInputCSVData()};
 
-        for (std::uint32_t i{ 0 }, j{ 0 }; i < outputData.size() && j < inputData.size(); ++i, ++j) {
-            for (std::uint32_t l{ 0 }; l < inputData.at(j).size(); ++l) {
+        for (std::uint32_t i{0}, j{0}; i < outputData.size() && j < inputData.size(); ++i, ++j) {
+            for (std::uint32_t l{0}; l < inputData.at(j).size(); ++l) {
                 fileStream << inputData.at(j).at(l) << ',';
             }
-            fileStream << "-->" << ',';
+            fileStream << "-->";
 
-            for (std::uint32_t k{ 0 }; k < outputData.at(i).size() ; ++k) {
-                fileStream << std::fixed << outputData.at(i).at(k) << ',';
+            for (std::uint32_t k{0}; k < outputData.at(i).size(); ++k) {
+                fileStream << ',' << std::fixed << outputData.at(i).at(k);
             }
             fileStream << std::endl;
         }
@@ -57,10 +55,9 @@ namespace IccConvert {
 
     CommandLineUtility::CommandLineArgValue CommandLineUtility::getCommandLineArgValue(std::string const &argKey) {
         CommandLineUtility::CommandLineArgValue result{};
-        if (auto const foundKey{ mCommandLineArgs.find(argKey) }; foundKey != mCommandLineArgs.end()) {
+        if (auto const foundKey{mCommandLineArgs.find(argKey)}; foundKey != mCommandLineArgs.end()) {
             result = foundKey->second;
-        }
-        else {
+        } else {
             std::cerr << "Command line option key not found " << argKey << std::endl;
         }
 
@@ -81,47 +78,42 @@ namespace IccConvert {
         // arg values according to a given command line option
         auto setCommandLineArgValues{
             [&colourDataValue, this]
-            (std::string& argKey, std::string const& argValue) {
+            (std::string &argKey, std::string const &argValue) {
                 // Convert command line options to lowercase so that
                 // characters are all standardised, regardless of input format
-                for (auto& letter : argKey) {
+                for (auto &letter: argKey) {
                     letter = std::tolower(static_cast<unsigned char>(letter));
                 }
 
-                if (argKey == std::string{ "input_file" }) {
+                if (argKey == std::string{"input_file"}) {
                     colourDataValue.setInputCSVData(readFrom(argValue).getInputCSVData());
-                }
-                else if (argKey == std::string{ "render_intent" }) {
+                } else if (argKey == std::string{"render_intent"}) {
                     colourDataValue.setRenderingIntent(std::stol(argValue));
-                }
-                else if (argKey == std::string{ "profile" }) {
+                } else if (argKey == std::string{"profile"}) {
                     colourDataValue.setProfile(argValue);
-                }
-                else if (argKey == std::string{ "devicetopcs" }) {
+                } else if (argKey == std::string{"devicetopcs"}) {
                     colourDataValue.setDeviceToPcs(std::stol(argValue));
-                }
-                else if (argKey == std::string{ "output_to" }) {
+                } else if (argKey == std::string{"output_to"}) {
                     colourDataValue.setOutputFile(argValue);
-                }
-                else {
+                } else {
                     std::cerr << "Invalid command line option " << argKey << std::endl;
                 }
             }
         };
 
-        for (auto const& arg : commandLineArgs) {
+        for (auto const &arg: commandLineArgs) {
             // Get start and end positions of command line option key
-            const auto keyStart{ arg.find_first_of('-') + 1 };
-            const auto keyEnd{ arg.find_last_of('=') - 1 };
+            const auto keyStart{arg.find_first_of('-') + 1};
+            const auto keyEnd{arg.find_last_of('=') - 1};
             argKey = arg.substr(keyStart, keyEnd);
 
             // Get start position of command line option value
-            const auto valueStart{ keyEnd + 2 };
+            const auto valueStart{keyEnd + 2};
             argValue = arg.substr(valueStart);
 
             setCommandLineArgValues(argKey, argValue);
 
-            mCommandLineArgs.insert({ argKey, { argValue, colourDataValue } });
+            mCommandLineArgs.insert({argKey, {argValue, colourDataValue}});
         }
 
         return colourDataValue;
