@@ -84,7 +84,6 @@
 #include "IccSparseMatrix.h"
 #include "IccEncoding.h"
 #include "IccMatrixMath.h"
-#include "IccCmm.h"
 
 #ifdef USEREFICCMAXNAMESPACE
 namespace refIccMAX {
@@ -1756,9 +1755,8 @@ icColorSpaceSignature CIccXform::GetSrcSpace() const
   icProfileClassSignature deviceClass = m_pProfile->m_Header.deviceClass;
 
   if (m_bInput) {
-    if (m_bPcsAdjustXform) {
+    if (m_bPcsAdjustXform)
       rv = m_pProfile->m_Header.pcs;
-    }
     else {
       rv = m_pProfile->m_Header.colorSpace;
 

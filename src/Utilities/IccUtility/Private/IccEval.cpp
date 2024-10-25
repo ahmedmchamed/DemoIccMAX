@@ -182,16 +182,16 @@ icStatusCMM CIccEvalCompare::EvaluateProfile(CIccProfile *pProfile, icUInt8Numbe
 
     Compare(sPixel, devPcs, roundPcs1, roundPcs2);
   }
-
+  
   return icCmmStatOk;
 }
 
-icStatusCMM CIccEvalCompare::EvaluateProfile(const icChar *szProfilePath, icUInt8Number nGrid/* =0 */, icRenderingIntent nIntent/* =icUnknownIntent */,
+icStatusCMM CIccEvalCompare::EvaluateProfile(const icChar *szProfilePath, icUInt8Number nGrid/* =0 */, icRenderingIntent nIntent/* =icUnknownIntent */, 
                                              icXformInterp nInterp/* =icInterpLinear */, bool buseMpeTags/* =true */)
 {
   CIccProfile *pProfile = ReadIccProfile(szProfilePath);
 
-  if (!pProfile)
+  if (!pProfile) 
     return icCmmStatCantOpenProfile;
 
   icStatusCMM result = EvaluateProfile(pProfile, nGrid, nIntent, nInterp, buseMpeTags);

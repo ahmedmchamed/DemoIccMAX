@@ -68,7 +68,7 @@ Copyright:  (c) see ICC Software License
 //
 //////////////////////////////////////////////////////////////////////
 
-#ifndef _ICCAPPLYBPC_H
+#if !defined(_ICCAPPLYBPC_H)
 #define _ICCAPPLYBPC_H
 
 #include "IccCmm.h"

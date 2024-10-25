@@ -70,8 +70,8 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-#ifndef ICC_CMM_H_
-#define ICC_CMM_H_
+#if !defined(_ICCCMM_H)
+#define _ICCCMM_H
 
 #include "IccProfile.h"
 #include "IccTag.h"
@@ -409,9 +409,9 @@ public:
 
   bool IsMCS() const { return m_nMCS!=icNoMCS; }
 
-  bool IsExtendedPCS() const { return m_pProfile && ((m_pProfile->m_Header.flags & icExtendedRangePCS) != 0); }
+  bool IsExtendedPCS() const { return m_pProfile && (m_pProfile->m_Header.flags & icExtendedRangePCS) != 0; }
 
-  bool IsAbstract() const { return m_bPcsAdjustXform || (m_pProfile && (m_pProfile->m_Header.deviceClass==icSigAbstractClass)); }
+  bool IsAbstract() const { return m_bPcsAdjustXform || (m_pProfile && m_pProfile->m_Header.deviceClass==icSigAbstractClass); }
     
   /// The following function is for Overridden create function
   void SetParams(CIccProfile *pProfile, bool bInput, icRenderingIntent nIntent, icRenderingIntent nTagIntet,
@@ -1238,12 +1238,19 @@ protected:
   const CIccMatrix* m_ApplyMatrixPtr;
 };
 
+/*
+ ⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️
+ THE ICCMAX REPO DOES NOT HAVE THIS FOLLOWING LINE OF CODE
+ BUT IT WON'T BUILD FOR US WITHOUT IT - I DON'T KNOW (OR CARE) WHY
+ (feel free to try to delete it following future updates to the main repo)
+ ⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️
+ */
 class CIccXformNDLut;
 
 class ICCPROFLIB_API CIccApplyNDLutXform : public CIccApplyXform
 {
   friend class CIccXformNDLut;
-public:
+public: 
   CIccApplyNDLutXform(CIccXformNDLut* pXform, CIccApplyCLUT* pApply);
   virtual ~CIccApplyNDLutXform();
 
@@ -1959,4 +1966,4 @@ protected:
 }; //namespace refIccMAX
 #endif
 
-#endif
+#endif // !defined(_ICCCMM_H)
