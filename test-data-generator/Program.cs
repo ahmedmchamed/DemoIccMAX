@@ -27,67 +27,71 @@ return;
 
 void ProcessProfile(Profile profile)
 {
-    var pcsChannels = profile.Header.Pcs switch
+    var isLabPcs = profile.Header.Pcs switch
     {
-        "Lab " => 3,
+        "Lab " => true,
+        "XYZ " => false,
         _ => throw new NotSupportedException($"PCS {profile.Header.Pcs}")
     };
 
     var deviceChannels = profile.Header.DataColourSpace switch
     {
-        "RGB" => 3,
+        "RGB " => 3,
         "CMYK" => 4,
         "7CLR" => 7,
         _ => throw new NotSupportedException($"Device space {profile.Header.DataColourSpace}")
     };
     
-    GenerateDeviceToPcsData(profile, pcsChannels, deviceChannels);
-    GeneratePcsToDeviceData(profile, pcsChannels, deviceChannels);
+    var deviceToPcsInputs = GenerateNormalisedInputs(deviceChannels);
+    GenerateData(profile, deviceToPcsInputs, deviceToPcs: true);
+    
+    var pcsToDeviceInputs = isLabPcs ? GenerateLabInputs() : GenerateNormalisedInputs(3);
+    GenerateData(profile, pcsToDeviceInputs, deviceToPcs: false);
 }
 
-void GenerateDeviceToPcsData(Profile profile, int pcsChannels, int deviceChannels)
+List<string> GenerateNormalisedInputs(int channels)
 {
     // standard range
-    var deviceToPcsValuesPerChannel = deviceChannels <= 4 ? 6 : 3;
-    var deviceToPcsVectors = GenerateVectorsOfBaseN(deviceChannels, deviceToPcsValuesPerChannel);
-    var deviceToPcsRows = deviceToPcsVectors
-        .Select(vector => vector.Select(x => $"{x / ((double)deviceToPcsValuesPerChannel - 1)}"))
+    var valuesPerChannel = channels <= 4 ? 6 : 3;
+    var vectors = GenerateVectorsOfBaseN(channels, valuesPerChannel);
+    var inputs = vectors
+        .Select(vector => vector.Select(x => $"{x / ((double)valuesPerChannel - 1)}"))
         .Select(vector => string.Join(",", vector))
         .ToList();
 
     // each device channel out of range
-    for (var i = 0; i < deviceChannels; i++)
+    for (var i = 0; i < channels; i++)
     {
-        var lowerBound = new double[deviceChannels].Select(_ => 0.5).ToArray();
+        var lowerBound = new double[channels].Select(_ => 0.5).ToArray();
         lowerBound[i] = -0.1;
-        deviceToPcsRows.Add(string.Join(",", lowerBound));
+        inputs.Add(string.Join(",", lowerBound));
         
-        var upperBound = new double[deviceChannels].Select(_ => 0.5).ToArray();
+        var upperBound = new double[channels].Select(_ => 0.5).ToArray();
         upperBound[i] = 1.1;
-        deviceToPcsRows.Add(string.Join(",", upperBound));
+        inputs.Add(string.Join(",", upperBound));
     }
-    
-    GenerateData(profile, deviceToPcsRows, deviceToPcs: true);
+
+    return inputs;
 }
 
-void GeneratePcsToDeviceData(Profile profile, int pcsChannels, int deviceChannels)
+List<string> GenerateLabInputs()
 {
     int[] lValues = [0, 20, 40, 60, 80, 100];
     int[] aValues = [-127, -100, -75, -50, -25, 0, 25, 50, 75, 100, 128];
     int[] bValues = [-127, -100, -75, -50, -25, 0, 25, 50, 75, 100, 128];
 
-    var pcsToDeviceRows = new List<string>();
+    var inputs = new List<string>();
     
     // standard range
     foreach (var l in lValues)
     foreach (var a in aValues)
     foreach (var b in bValues)
     {
-        pcsToDeviceRows.Add($"{l},{a},{b}");
+        inputs.Add($"{l},{a},{b}");
     }
     
     // each device channel out of range
-    pcsToDeviceRows.AddRange(
+    inputs.AddRange(
     [
         "-1,0,0",
         "101,0,0",
@@ -96,8 +100,8 @@ void GeneratePcsToDeviceData(Profile profile, int pcsChannels, int deviceChannel
         "50,0,-130",
         "50,0,130"
     ]);
-    
-    GenerateData(profile, pcsToDeviceRows, deviceToPcs: false);
+
+    return inputs;
 }
 
 void GenerateData(Profile profile, List<string> inputRows, bool deviceToPcs)

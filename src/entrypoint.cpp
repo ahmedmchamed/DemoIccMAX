@@ -33,9 +33,8 @@ int main(int argc, char *argv[]) {
         return icCmmStatInvalidProfile;
     }
 
-    // TODO: can we generalise to non-LAB PCS spaces?
-    const auto sourceSpace = colourData.isDeviceToPcs() ? icSigUnknownData : icSigLabData;
-    const auto destinationSpace = colourData.isDeviceToPcs() ? icSigLabData : profile->m_Header.colorSpace;
+    const auto sourceSpace = colourData.isDeviceToPcs() ? profile->m_Header.colorSpace : profile->m_Header.pcs;
+    const auto destinationSpace = colourData.isDeviceToPcs() ? profile->m_Header.pcs : profile->m_Header.colorSpace;
     CIccCmm profileApplier(sourceSpace, destinationSpace, colourData.isDeviceToPcs());
 
     icStatusCMM result{
@@ -57,7 +56,6 @@ int main(int argc, char *argv[]) {
 
     int outputChannels;
     if (colourData.isDeviceToPcs()) {
-        // TODO: update when supporting non-LAB PCS
         outputChannels = 3;
     } else {
         // non-exhaustive; update whenever encountering more exotic profiles
@@ -77,16 +75,24 @@ int main(int argc, char *argv[]) {
             srcPixel[i] = static_cast<icFloatNumber>(row[i]);
         }
 
-        // this assumes source is LAB
         if (!colourData.isDeviceToPcs()) {
-            icLabToPcs(srcPixel);
+            if (profile->m_Header.pcs == icSigLabData) {
+                icLabToPcs(srcPixel);
+            }
+            else if (profile->m_Header.pcs == icSigXYZData) {
+                icXyzToPcs(srcPixel);
+            }
         }
 
         profileApplier.Apply(dstPixel, srcPixel); //Convert device value to pcs from input table
 
-        // this assumes destination is LAB
         if (colourData.isDeviceToPcs()) {
-            icLabFromPcs(dstPixel);
+            if (profile->m_Header.pcs == icSigLabData) {
+                icLabFromPcs(dstPixel);
+            }
+            else if (profile->m_Header.pcs == icSigXYZData) {
+                icXyzFromPcs(dstPixel);
+            }
         }
 
         std::vector<double> outputValue;
