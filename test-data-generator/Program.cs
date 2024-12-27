@@ -36,6 +36,7 @@ void ProcessProfile(Profile profile)
 
     var deviceChannels = profile.Header.DataColourSpace switch
     {
+        "GRAY" => 1,
         "RGB " => 3,
         "CMYK" => 4,
         "7CLR" => 7,

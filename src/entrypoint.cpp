@@ -64,6 +64,8 @@ int main(int argc, char *argv[]) {
                 break;
             case icSig7colorData: outputChannels = 7;
                 break;
+            case icSigGrayData: outputChannels = 1;
+                break;
             default: outputChannels = 3;
                 break;
         }
