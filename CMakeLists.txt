@@ -24,6 +24,10 @@ function(add_source_directories)
 
 endfunction()
 
+# Somehow fixes the following DLLs not being found (when run from CMD)
+# libstdc++6.dll, libwinpthread-1.dll
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libgcc -static-libstdc++ -static -lpthread")
+
 # Setting the necessary compile flags
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)

@@ -11,7 +11,7 @@ namespace IccConvert {
     public:
         ColourData() = default;
 
-        using Rows = std::vector<float>;
+        using Rows = std::vector<double>;
 
         enum class RenderingIntent : std::uint16_t {
             PERCEPTUAL=0,

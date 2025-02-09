@@ -88,9 +88,9 @@ public:
   bool InGamut(icFloatNumber *Lab);
   bool InGamut(icFloatNumber L, icFloatNumber c, icFloatNumber h);
 
-  icStatusCMM EvaluateProfile(CIccProfile *pProfile, icRenderingIntent nIntent=icUnknownIntent,
+  icStatusCMM EvaluateProfile(CIccProfile *pProfile, icRenderingIntent nIntent=icUnknownIntent, 
                               icXformInterp nInterp=icInterpLinear, bool buseMpeTags=true);
-  icStatusCMM EvaluateProfile(const icChar *szProfilePath, icRenderingIntent nIntent=icUnknownIntent,
+  icStatusCMM EvaluateProfile(const icChar *szProfilePath, icRenderingIntent nIntent=icUnknownIntent, 
                               icXformInterp nInterp=icInterpLinear, bool buseMpeTags=true);
 
   icUInt32Number m_nDE1, m_nDE2, m_nDE3, m_nDE5, m_nDE10, m_nTotal;
