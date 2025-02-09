@@ -17,7 +17,7 @@ namespace IccConvert {
         mRenderIntent = static_cast<RenderingIntent>(intent);
     }
 
-    void ColourData::setDeviceToPcs(std::uint32_t deviceToPcsFlag) {
+    void ColourData::setDeviceToPcs(std::uint32_t const deviceToPcsFlag) {
         mIsDeviceToPcs = static_cast<bool>(deviceToPcsFlag);
     }
 

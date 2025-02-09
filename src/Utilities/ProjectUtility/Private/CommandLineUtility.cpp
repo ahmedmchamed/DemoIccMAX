@@ -81,30 +81,30 @@ namespace IccConvert {
         // arg values according to a given command line option
         auto setCommandLineArgValues{
             [&colourDataValue, this]
-            (std::string& argKey, std::string const& argValue) {
+            (std::string& key, std::string const& value) {
                 // Convert command line options to lowercase so that
                 // characters are all standardised, regardless of input format
-                for (auto& letter : argKey) {
+                for (auto& letter : key) {
                     letter = std::tolower(static_cast<unsigned char>(letter));
                 }
 
-                if (argKey == std::string{ "input_file" }) {
-                    colourDataValue.setInputCSVData(readFrom(argValue).getInputCSVData());
+                if (key == std::string{ "input_file" }) {
+                    colourDataValue.setInputCSVData(readFrom(value).getInputCSVData());
                 }
-                else if (argKey == std::string{ "render_intent" }) {
-                    colourDataValue.setRenderingIntent(std::stol(argValue));
+                else if (key == std::string{ "render_intent" }) {
+                    colourDataValue.setRenderingIntent(std::stol(value));
                 }
-                else if (argKey == std::string{ "profile" }) {
-                    colourDataValue.setProfile(argValue);
+                else if (key == std::string{ "profile" }) {
+                    colourDataValue.setProfile(value);
                 }
-                else if (argKey == std::string{ "devicetopcs" }) {
-                    colourDataValue.setDeviceToPcs(std::stol(argValue));
+                else if (key == std::string{ "devicetopcs" }) {
+                    colourDataValue.setDeviceToPcs(std::stol(value));
                 }
-                else if (argKey == std::string{ "output_to" }) {
-                    colourDataValue.setOutputFile(argValue);
+                else if (key == std::string{ "output_to" }) {
+                    colourDataValue.setOutputFile(value);
                 }
                 else {
-                    std::cerr << "Invalid command line option " << argKey << std::endl;
+                    std::cerr << "Invalid command line option " << key << std::endl;
                 }
             }
         };
