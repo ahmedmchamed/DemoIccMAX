@@ -9,8 +9,8 @@
 
 int main(int argc, char *argv[]) {
     std::vector<std::string> commandLineArgs{};
-    // Make sure to skip program name itself by
-    // indexing from 1
+
+    // skip the program name itself by indexing from 1
     for (std::uint32_t i{1}; i < argc; ++i) {
         commandLineArgs.emplace_back(argv[i]);
     }
@@ -19,8 +19,6 @@ int main(int argc, char *argv[]) {
     IccConvert::ColourData const colourData{utility.parseCommandLineArgs(commandLineArgs)};
 
     CIccProfile *profile = ReadIccProfile(colourData.getProfile().c_str());
-    const auto intent = static_cast<icRenderingIntent>(static_cast<std::uint32_t>(colourData.getRenderIntent()));
-    const auto useMPE = false; // whatever this is...
 
     if (!profile) {
         return icCmmStatCantOpenProfile;
@@ -33,12 +31,24 @@ int main(int argc, char *argv[]) {
         return icCmmStatInvalidProfile;
     }
 
+    const auto intent = static_cast<icRenderingIntent>(static_cast<std::uint32_t>(colourData.getRenderIntent()));
     const auto sourceSpace = colourData.isDeviceToPcs() ? profile->m_Header.colorSpace : profile->m_Header.pcs;
     const auto destinationSpace = colourData.isDeviceToPcs() ? profile->m_Header.pcs : profile->m_Header.colorSpace;
     CIccCmm profileApplier(sourceSpace, destinationSpace, colourData.isDeviceToPcs());
 
-    icStatusCMM result{
-        profileApplier.AddXform(profile, intent, icInterpLinear, nullptr, icXformLutColorimetric, useMPE)
+    // unclear why this is a choice, and set to false in ICC roundtrip demo ("useMPE" - multiProcessElement)
+    // spec says DToB takes precedence over all other tags...
+    // ... "except where this tag is not needed or supported by the CMM"
+    // does that mean it's valid to choose not to implement DToB conversion and simply not support it? 🤷
+    constexpr auto useDToBTags = false;
+
+    // additionally, who determines this? LutColor might be more appropriate
+    // ("a combination of icXformLutColorimetric with icXformLutSpectral")
+    // since LutColorimetric appears to disable use of DToB tags in some cases for some reason? 🤷
+    constexpr auto icXformLutType = icXformLutColorimetric;
+
+    icStatusCMM result {
+        profileApplier.AddXform(profile, intent, icInterpLinear, nullptr, icXformLutType, useDToBTags)
     };
 
     if (result != icCmmStatOk) {
@@ -86,7 +96,7 @@ int main(int argc, char *argv[]) {
             }
         }
 
-        profileApplier.Apply(dstPixel, srcPixel); //Convert device value to pcs from input table
+        profileApplier.Apply(dstPixel, srcPixel);
 
         if (colourData.isDeviceToPcs()) {
             if (profile->m_Header.pcs == icSigLabData) {
