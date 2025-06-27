@@ -34,7 +34,7 @@ int main(int argc, char *argv[]) {
     const auto intent = static_cast<icRenderingIntent>(static_cast<std::uint32_t>(colourData.getRenderIntent()));
     const auto sourceSpace = colourData.isDeviceToPcs() ? profile->m_Header.colorSpace : profile->m_Header.pcs;
     const auto destinationSpace = colourData.isDeviceToPcs() ? profile->m_Header.pcs : profile->m_Header.colorSpace;
-    CIccCmm profileApplier(sourceSpace, destinationSpace, colourData.isDeviceToPcs());
+    CIccCmm cmm(sourceSpace, destinationSpace, colourData.isDeviceToPcs());
 
     // unclear why this is a choice, and set to false in ICC roundtrip demo ("useMPE" - multiProcessElement)
     // spec says DToB takes precedence over all other tags...
@@ -48,14 +48,14 @@ int main(int argc, char *argv[]) {
     constexpr auto icXformLutType = icXformLutColorimetric;
 
     icStatusCMM result {
-        profileApplier.AddXform(profile, intent, icInterpLinear, nullptr, icXformLutType, useDToBTags)
+        cmm.AddXform(profile, intent, icInterpLinear, nullptr, icXformLutType, useDToBTags)
     };
 
     if (result != icCmmStatOk) {
         return result;
     }
 
-    result = profileApplier.Begin();
+    result = cmm.Begin();
 
     if (result != icCmmStatOk) {
         return result;
@@ -96,7 +96,12 @@ int main(int argc, char *argv[]) {
             }
         }
 
-        profileApplier.Apply(dstPixel, srcPixel);
+        // srcPixel[0] = 1;
+        // srcPixel[1] = 1;
+        // srcPixel[2] = 1;
+        // srcPixel[3] = 1;
+        cmm.Apply(dstPixel, srcPixel);
+        // cmm.FromInternalEncoding(cmm.GetDestSpace(), icEncodeValue, dstPixel, dstPixel, false);
 
         if (colourData.isDeviceToPcs()) {
             if (profile->m_Header.pcs == icSigLabData) {
