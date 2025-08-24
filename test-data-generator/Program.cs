@@ -8,6 +8,12 @@ const string converterRelativePath = "../../../../../cmake-build-debug/EntryPoin
 var exeLocation = Assembly.GetEntryAssembly()!.Location;
 var profilesPath = Path.GetFullPath(Path.Combine(exeLocation, profilesRelativePath));
 var converterPath = Path.GetFullPath(Path.Combine(exeLocation, converterRelativePath));
+var outputPath = Path.GetFullPath(Path.Combine(exeLocation, "../output/"));
+
+Directory.CreateDirectory(outputPath);
+
+var converterDateTime = new FileInfo(converterPath).LastWriteTime;
+Console.WriteLine($"Converter built {converterDateTime:f}");
 
 var files = Directory.GetFiles(profilesPath, "*.icc");
 foreach (var file in files)
@@ -113,11 +119,11 @@ void GenerateData(Profile profile, List<string> inputRows, bool deviceToPcs)
 
     for (var intent = 0; intent <= 3; intent++)
     {
-        var profilePath = profile.FileInfo.FullName;
-        var outputCsvFilename = $"./{Path.GetFileNameWithoutExtension(profilePath)}_{(deviceToPcs ? "ToPcs" : "ToDevice")}_ICC-{intent}.csv";
-        var outputCsvPath = Path.GetFullPath(outputCsvFilename);
+        var outputCsvFilename = $"{profile.Name}_{(deviceToPcs ? "ToPcs" : "ToDevice")}_ICC-{intent}.csv";
+        var outputCsvPath = Path.Combine(outputPath, outputCsvFilename);
 
-        var arguments = $"-profile=\"{profilePath}\" -deviceToPcs={(deviceToPcs ? "1" : "0")} -render_intent={intent} -input_file=\"{inputCsvPath}\" -output_to=\"{outputCsvPath}\"";
+        var iccFile = Path.Combine(profilesPath, $"{profile.Name}.icc");
+        var arguments = $"-profile=\"{iccFile}\" -deviceToPcs={(deviceToPcs ? "1" : "0")} -render_intent={intent} -input_file=\"{inputCsvPath}\" -output_to=\"{outputCsvPath}\"";
         
         var process = new Process
         {

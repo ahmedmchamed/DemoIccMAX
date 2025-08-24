@@ -13,7 +13,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Wacton.Unicolour" Version="4.6.0" />
+      <PackageReference Include="Wacton.Unicolour" Version="6.1.0" />
     </ItemGroup>
 
 </Project>
