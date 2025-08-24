@@ -124,3 +124,60 @@ int main(int argc, char *argv[]) {
 
     return icCmmStatOk;
 }
+
+// int main(int argc, char *argv[]) {
+//     std::vector<std::string> commandLineArgs{};
+//
+//     // skip the program name itself by indexing from 1
+//     for (std::uint32_t i{1}; i < argc; ++i) {
+//         commandLineArgs.emplace_back(argv[i]);
+//     }
+//
+//     IccConvert::CommandLineUtility utility{};
+//     IccConvert::ColourData const colourData{utility.parseCommandLineArgs(commandLineArgs)};
+//
+//     CIccProfile *profile = ReadIccProfile(colourData.getProfile().c_str());
+//
+//     if (!profile) {
+//         return icCmmStatCantOpenProfile;
+//     }
+//
+//     if (profile->m_Header.deviceClass != icSigInputClass &&
+//         profile->m_Header.deviceClass != icSigDisplayClass &&
+//         profile->m_Header.deviceClass != icSigOutputClass &&
+//         profile->m_Header.deviceClass != icSigColorSpaceClass) {
+//         return icCmmStatInvalidProfile;
+//     }
+//
+//     // const auto intent = static_cast<icRenderingIntent>(static_cast<std::uint32_t>(colourData.getRenderIntent()));
+//     // const auto sourceSpace = colourData.isDeviceToPcs() ? profile->m_Header.colorSpace : profile->m_Header.pcs;
+//     // const auto destinationSpace = colourData.isDeviceToPcs() ? profile->m_Header.pcs : profile->m_Header.colorSpace;
+//
+// const auto intent = icRelativeColorimetric;
+// const auto sourceSpace = profile->m_Header.colorSpace;      // I use m_Header.pcs when PCS -> device
+// const auto destinationSpace = profile->m_Header.pcs;        // I use m_Header.colourSpace when PCS -> device
+// CIccCmm cmm(sourceSpace, destinationSpace, true); // I use false when PCS -> device
+// cmm.AddXform(profile, intent, icInterpLinear, nullptr, icXformLutColorimetric, false);
+// cmm.Begin();
+//
+// icFloatNumber srcPixel[15];
+// icFloatNumber dstPixel[15];
+//
+// srcPixel[0] = 0;
+// srcPixel[1] = 0;
+// srcPixel[2] = 0;
+// srcPixel[3] = 0;
+//
+// // I call either icLabToPcs(srcPixel) or icXyzToPcs(srcPixel) here when PCS -> device
+//
+// cmm.Apply(dstPixel, srcPixel);
+//
+// if (profile->m_Header.pcs == icSigLabData) {
+//     icLabFromPcs(dstPixel);
+// }
+// else if (profile->m_Header.pcs == icSigXYZData) {
+//     icXyzFromPcs(dstPixel);
+// }
+//
+//     return icCmmStatOk;
+// }
