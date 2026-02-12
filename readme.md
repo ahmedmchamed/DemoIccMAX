@@ -1,12 +1,11 @@
 ## Building the project
 * Create a `build` directory at the top level of the project (where the top level `CMakeLists.txt` lives)
 * `cd` into `build` and run `cmake .. && cmake --build .`
-* This will create the `EntryPoint` executable in the same directory
+* This will create the `ConvertSingle` and `ConvertBulk` executables in the same directory
 
 ## Running the project
-* Please ensure that you have your `profile_name.icc` file in the same directory that you run `EntryPoint` from
 * Available command line options are:
-    * `-profile=your_profile.icc`
+    * `-profile=your_profile.icc` - absolute path
     * `-input_file=` - enter either a single filename or an absolute path
     * `-deviceToPcs=...` - available values are `1` or `0` depending on whether attribute is `true` or `false` respectively
     * `-render_intent=...` - available options are:
