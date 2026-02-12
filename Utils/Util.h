@@ -1,14 +1,11 @@
 #ifndef COMMAND_LINE_UTILITY_H
 #define COMMAND_LINE_UTILITY_H
 
-// Utility
 #include <string>
 #include <filesystem>
 #include <unordered_map>
 #include <utility>
 #include <vector>
-
-// IccUtility
 #include "Config.h"
 
 namespace Utils {
