@@ -6,7 +6,7 @@
 #include <vector>
 #include <string>
 
-namespace IccConvert {
+namespace Utils {
     class ColourData {
     public:
         ColourData() = default;

@@ -1,6 +1,6 @@
 #include "ColourData.h"
 
-namespace IccConvert {
+namespace Utils {
     void ColourData::setInputCSVData(std::vector<Rows> const& inputData) {
         mInputCsvData = inputData;
     }

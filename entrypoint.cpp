@@ -1,11 +1,11 @@
 #include <cstdint>
 #include <vector>
 
-#include "ColourData.h"
-#include "CommandLineUtility.h"
-#include "IccCmm.h"
-#include "IccProfile.h"
-#include "icProfileHeader.h"
+#include "Utils/ColourData.h"
+#include "Utils/CommandLineUtility.h"
+#include "IccProfLib/IccCmm.h"
+#include "IccProfLib/IccProfile.h"
+#include "IccProfLib/icProfileHeader.h"
 
 int main(int argc, char *argv[]) {
     std::vector<std::string> commandLineArgs{};
@@ -15,8 +15,8 @@ int main(int argc, char *argv[]) {
         commandLineArgs.emplace_back(argv[i]);
     }
 
-    IccConvert::CommandLineUtility utility{};
-    IccConvert::ColourData const colourData{utility.parseCommandLineArgs(commandLineArgs)};
+    Utils::CommandLineUtility utility{};
+    Utils::ColourData const colourData{utility.parseCommandLineArgs(commandLineArgs)};
 
     CIccProfile *profile = ReadIccProfile(colourData.getProfile().c_str());
 
@@ -81,7 +81,7 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    std::vector<IccConvert::ColourData::Rows> outputData;
+    std::vector<Utils::ColourData::Rows> outputData;
     for (const auto &row: colourData.getInputCSVData()) {
         for (std::size_t i = 0; i < row.size(); ++i) {
             srcPixel[i] = static_cast<icFloatNumber>(row[i]);
@@ -120,7 +120,7 @@ int main(int argc, char *argv[]) {
         outputData.push_back(outputValue);
     }
 
-    IccConvert::CommandLineUtility::writeTo(colourData.getOutputFile(), outputData, colourData);
+    Utils::CommandLineUtility::writeTo(colourData.getOutputFile(), outputData, colourData);
 
     return icCmmStatOk;
 }

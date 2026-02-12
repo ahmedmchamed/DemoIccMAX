@@ -3,27 +3,6 @@ cmake_minimum_required(VERSION 3.20)
 project(BasicICCDemo
         VERSION 0.1)
 
-function(add_source_directories)
-    add_executable(EntryPoint ${CMAKE_CURRENT_LIST_DIR}/src/entrypoint.cpp)
-
-    cmake_parse_arguments(
-        PARSE_ARGV 0
-        ARG
-        "" "TARGETS" "LIBRARY_DIRECTORIES"
-    )
-
-    foreach (library ${ARG_LIBRARY_DIRECTORIES})
-        message(${library})
-        add_subdirectory(${library})
-    endforeach ()
-
-    foreach (target ${ARG_TARGETS})
-        message(${target})
-        target_link_libraries(EntryPoint PUBLIC ${target})
-    endforeach ()
-
-endfunction()
-
 # Somehow fixes the following DLLs not being found (when run from CMD)
 # libstdc++6.dll, libwinpthread-1.dll
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libgcc -static-libstdc++ -static -lpthread")
@@ -32,13 +11,10 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libgcc -static-libstdc++ -static
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Set the targets list - i.e. the requisite components
-set(TARGETS_LIST
-    Utilities)
+add_executable(EntryPoint entrypoint.cpp)
 
-add_source_directories(
-    TARGETS
-        "${TARGETS_LIST}"
-    LIBRARY_DIRECTORIES
-        "${PROJECT_SOURCE_DIR}/src/Utilities"
-)
+add_subdirectory("${PROJECT_SOURCE_DIR}/IccProfLib")
+target_link_libraries(EntryPoint PUBLIC IccProfLib)
+
+add_subdirectory("${PROJECT_SOURCE_DIR}/Utils")
+target_link_libraries(EntryPoint PUBLIC Utils)

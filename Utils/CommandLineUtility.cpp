@@ -4,7 +4,7 @@
 #include <iostream>
 #include "CommandLineUtility.h"
 
-namespace IccConvert {
+namespace Utils {
     ColourData CommandLineUtility::readFrom(std::filesystem::path const &filePath) {
         ColourData result{};
         std::vector<ColourData::Rows> csvData{};
