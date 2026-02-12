@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 
-project(BasicICCDemo
+project(IccColourConversion
         VERSION 0.1)
 
 # Somehow fixes the following DLLs not being found (when run from CMD)
