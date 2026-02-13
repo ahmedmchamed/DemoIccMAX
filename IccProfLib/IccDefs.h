@@ -4,15 +4,11 @@
     Contains:   Access ICC profile definitions and structures including
                 Version 4 extensions
 
-    Copyright:  (c) see ICC Software License
+    Copyright:  (c) see Software License
  */
 
 /*
- * The ICC Software License, Version 0.2
- *
- *
- * Copyright (c) 2003-2012 The International Color Consortium. All rights 
- * reserved.
+ * Copyright (c) International Color Consortium.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -60,6 +56,7 @@
  * 
  */
 
+#include <stdint.h>
 #include <stddef.h>
 
 /* Header file guard bands */
@@ -71,8 +68,8 @@
 //Get any platform specific prototypes
 #include "IccProfLibConf.h"
 
-#ifdef USEREFICCMAXNAMESPACE
-namespace refIccMAX {
+#ifdef USEICCDEVNAMESPACE
+namespace iccDEV {
 #endif
 
 //Include the standard icProfileHeader definition file
@@ -81,15 +78,6 @@ namespace refIccMAX {
 //Definitions used for conversion of fixed floating point numbers
 typedef icUInt16Number icU1Fixed15Number;
 typedef icUInt16Number icU8Fixed8Number;
-
-/**
-* Additional convenience color space signatures to distinguish between device
-* encoding and PCS encoding.
-*
-* Device encoding of these color spaces is left to the device to define.
-*/
-#define icSigDevLabData     ((icColorSpaceSignature) 0x644C6162)  /* 'dLab' */
-#define icSigDevXYZData     ((icColorSpaceSignature) 0x6458595A)  /* 'dXYZ' */
 
 
 /**
@@ -125,11 +113,8 @@ typedef enum {
 
 #pragma pack()
 
-#ifdef USEREFICCMAXNAMESPACE
-} //namespace refIccMAX
+#ifdef USEICCDEVNAMESPACE
+} //namespace iccDEV
 #endif
 
 #endif /* _ICCDEFS_H */
-
-
-

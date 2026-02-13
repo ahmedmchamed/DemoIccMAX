@@ -5,15 +5,11 @@ Contains:   Header for implementation of Sparse Matrices
 
 Version:    V1
 
-Copyright:  (c) see ICC Software License
+Copyright:  (c) see Software License
 */
 
 /*
-* The ICC Software License, Version 0.2
-*
-*
-* Copyright (c) 2012 The International Color Consortium. All rights 
-* reserved.
+* Copyright (c) International Color Consortium.
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions
@@ -153,7 +149,7 @@ public:
 class ICCPROFLIB_API CIccSparseMatrix
 {
 public:
-  CIccSparseMatrix(void *pMatrix=NULL, icUInt32Number nSize=0, icSparseMatrixType nType=icSparseMatrixFloatNum, bool bInitFromData=false);
+  CIccSparseMatrix(void *pMatrix=NULL, size_t nSize=0, icSparseMatrixType nType=icSparseMatrixFloatNum, bool bInitFromData=false);
   CIccSparseMatrix(const CIccSparseMatrix &mtx);
 
   virtual ~CIccSparseMatrix(void);
@@ -163,7 +159,7 @@ public:
   icUInt16Number Rows() const { return m_nRows; }
   icUInt16Number Cols() const { return m_nCols; }
 
-  void Reset(void *pMatrix, icUInt32Number nSize, icSparseMatrixType nType, bool bInitFromData=true);
+  bool Reset(void *pMatrix, size_t nSize, icSparseMatrixType nType, bool bInitFromData=true);
   bool Init(icUInt16Number nRows, icUInt16Number nCols, bool bSetData=false);
   void Clear();
   bool Copy(const CIccSparseMatrix &mtx);
@@ -193,7 +189,7 @@ public:
 
 protected:
   icUInt8Number *m_pMatrix;
-  icUInt32Number m_nRawSize;
+  icUInt64Number m_nRawSize;
   icSparseMatrixType m_nType;
 
   icUInt16Number m_nRows;

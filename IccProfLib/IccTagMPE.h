@@ -6,15 +6,11 @@ and supporting classes
 
 Version:    V1
 
-Copyright:  (c) see ICC Software License
+Copyright:  (c) see Software License
 */
 
 /*
-* The ICC Software License, Version 0.2
-*
-*
-* Copyright (c) 2005 The International Color Consortium. All rights 
-* reserved.
+* Copyright (c) International Color Consortium.
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions
@@ -86,8 +82,8 @@ Copyright:  (c) see ICC Software License
 
 
 //CIccFloatTag support
-#ifdef USEREFICCMAXNAMESPACE
-namespace refIccMAX {
+#ifdef USEICCDEVNAMESPACE
+namespace iccDEV {
 #endif
 
 typedef enum {
@@ -251,9 +247,9 @@ public:
   virtual bool Read(icUInt32Number nSize, CIccIO *pIO);
   virtual bool Write(CIccIO *pIO);
 
-  virtual bool Begin(icElemInterp nIterp=icElemInterpLinear, CIccTagMultiProcessElement *pMPE=NULL) { return false; }
-  virtual CIccApplyMpe *GetNewApply() { return NULL; }
-  virtual void Apply(CIccApplyMpe *pApply, icFloatNumber *pDestPixel, const icFloatNumber *pSrcPixel) const {}
+  virtual bool Begin(icElemInterp /*nIterp=icElemInterpLinear*/, CIccTagMultiProcessElement * /*pMPE=NULL*/) { return false; }
+  virtual CIccApplyMpe *GetNewApply(CIccApplyTagMpe * /* pApplyTag */) { return NULL; }
+  virtual void Apply(CIccApplyMpe * /*pApply*/, icFloatNumber * /*pDestPixel*/, const icFloatNumber * /*pSrcPixel*/) const {}
 
   virtual icValidateStatus Validate(std::string sigPath, std::string &sReport, const CIccTagMultiProcessElement* pMPE=NULL, const CIccProfile* pProfile = NULL) const;
 
@@ -433,7 +429,7 @@ protected:
 
 
 //CIccMpeTag support
-#ifdef USEREFICCMAXNAMESPACE
+#ifdef USEICCDEVNAMESPACE
 }
 #endif
 

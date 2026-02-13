@@ -72,21 +72,20 @@
 #pragma warning( disable: 4786) //disable warning in <list.h>
 #endif
 
-#include <stdio.h>
-#include <math.h>
-#include <string.h>
-#include <stdlib.h>
-#include <codecvt>
+#include <cstdio>
+#include <cmath>
+#include <cstring>
+#include <cstdlib>
+//#include <codecvt>
 #include <locale>
 #include "IccTagDict.h"
 #include "IccUtil.h"
 #include "IccIO.h"
+#include "IccConvertUTF.h"
 
 
 //MSVC 6.0 doesn't support std::string correctly so we disable support in this case
 #ifndef ICC_UNSUPPORTED_TAG_DICT
-
-using convert_type = std::codecvt_utf8<wchar_t>;
 
 
 /*=============================================================================
@@ -204,6 +203,53 @@ CIccDictEntry::~CIccDictEntry()
 
 /**
 ******************************************************************************
+* Name: wstringToUTF8Converter
+*
+* Purpose: convert wstring to UTF8 string for display
+*
+* Args: std::wstring
+*
+* Return: std::string
+******************************************************************************/
+static
+std::string wstringToUTF8Converter( std::wstring &input )
+{
+
+#if 1
+  size_t maxBufferSize = 6 * ( input.size() + 1 );  // assume worst case conversion to UTF8
+  std::vector<char> outputBuffer ( maxBufferSize );
+  UTF8 *output_data( (UTF8 *)outputBuffer.data() );
+  UTF8 *output_end = output_data + maxBufferSize;
+  UTF8 *output_start = output_data;  // because this will be modified in the conversion routine
+
+  // wstring can be 16 or 32 bits depending on platform - so we need a conditional implementation to convert to UTF8
+  static_assert( sizeof(wchar_t) == 4 || sizeof(wchar_t) == 2, "wchar_t has an unexpected size." );
+  if (sizeof(wchar_t) == 4) {
+    const UTF32 *input_data( (const UTF32 *)input.data() );
+    const UTF32 *input_end = input_data + input.size();
+    (void) icConvertUTF32toUTF8 ( &input_data, input_end, &output_start, output_end, lenientConversion );
+  } else  {
+    const UTF16 *input_data( (const UTF16 *)input.data() );
+    const UTF16 *input_end = input_data + input.size();
+    (void) icConvertUTF16toUTF8 ( &input_data, input_end, &output_start, output_end, lenientConversion );
+  }
+
+// output_start has been moved to point to the end of the output, and should have a terminating NULL
+
+  return std::string ( (char *)output_data );     // this makes a copy of the output string data
+#else
+// deprecated implementation that still works for now, but is marked for removal in C++26
+// saving this, just in case the new code fails in testing
+  using convert_type = std::codecvt_utf8<wchar_t>;
+  std::wstring_convert<convert_type, wchar_t> converter;
+  return converter.to_bytes( input );
+#endif
+
+}
+
+
+/**
+******************************************************************************
 * Name: CIccDictEntry::Describe
 * 
 * Purpose: 
@@ -216,15 +262,12 @@ void CIccDictEntry::Describe(std::string &sDescription, int nVerboseness)
 {
   std::wstring ws;
 
-  //setup converter
-  std::wstring_convert<convert_type, wchar_t> converter;
-
   sDescription += "BEGIN DICT_ENTRY\nName=";
   ws.assign(m_sName->begin(), m_sName->end());
-  sDescription += converter.to_bytes(ws);
+  sDescription += wstringToUTF8Converter(ws);
   sDescription += "\nValue=";
   ws.assign(m_sValue->begin(), m_sValue->end());
-  sDescription += converter.to_bytes(ws);
+  sDescription += wstringToUTF8Converter(ws);
   sDescription += "\n";
 
   if (m_pNameLocalized) {
@@ -456,9 +499,10 @@ icUInt32Number CIccTagDict::MaxPosRecSize()
  ******************************************************************************/
 void CIccTagDict::Describe(std::string &sDescription, int nVerboseness)
 {
-  icChar buf[128];
+  const size_t bufSize = 128;
+  icChar buf[bufSize];
 
-  sprintf(buf, "BEGIN DICT_TAG\n");
+  snprintf(buf, bufSize, "BEGIN DICT_TAG\n");
   sDescription += buf;
 
   CIccNameValueDict::iterator i;
@@ -468,7 +512,7 @@ void CIccTagDict::Describe(std::string &sDescription, int nVerboseness)
     i->ptr->Describe(sDescription, nVerboseness);
   }
 
-  sprintf(buf, "\nEND DICT_TAG\n");
+  snprintf(buf, bufSize, "\nEND DICT_TAG\n");
   sDescription += buf;
 }
 
@@ -511,7 +555,7 @@ bool CIccTagDict::Read(icUInt32Number size, CIccIO *pIO)
 
   Cleanup();
 
-  m_tagStart = pIO->Tell();
+  m_tagStart = (icUInt32Number) pIO->Tell();
 
   if (!pIO->Read32(&sig))
     return false;
@@ -530,7 +574,7 @@ bool CIccTagDict::Read(icUInt32Number size, CIccIO *pIO)
   if (reclen!=16 && reclen!=24 && reclen!=32)
     return false;
 
-  if (headerSize + count*reclen > size)
+  if ((headerSize + (size_t)count*reclen) > (size_t)size)
     return false;
 
   icDictRecordPos *pos = (icDictRecordPos*)calloc(count, sizeof(icDictRecordPos));
@@ -613,7 +657,7 @@ bool CIccTagDict::Read(icUInt32Number size, CIccIO *pIO)
         }
 
         num = pos[i].posName.size / sizeof(icUnicodeChar);
-        if (pIO->Read16(buf, num)!=(icInt32Number)num) {
+        if (pIO->Read16(buf, num)!= num) {
           free(pos);
           free(buf);
           delete ptr.ptr;
@@ -658,7 +702,7 @@ bool CIccTagDict::Read(icUInt32Number size, CIccIO *pIO)
         }
 
         num = pos[i].posValue.size / sizeof(icUnicodeChar);
-        if (pIO->Read16(buf, num)!=(icInt32Number)num) {
+        if (pIO->Read16(buf, num)!=num) {
           free(pos);
           free(buf);
           delete ptr.ptr;
@@ -797,7 +841,7 @@ bool CIccTagDict::Write(CIccIO *pIO)
   if (!pIO)
     return false;
 
-  m_tagStart = pIO->Tell();
+  m_tagStart = (icUInt32Number) pIO->Tell();
 
   if (!pIO->Write32(&sig))
     return false;
@@ -825,7 +869,8 @@ bool CIccTagDict::Write(CIccIO *pIO)
   if (!pos)
     return false;
 
-  icUInt32Number n, dirpos = pIO->Tell();
+  icUInt32Number n;
+  size_t dirpos = pIO->Tell();
 
   //Write Unintialized Dict rec offset array
   for (i=m_Dict->begin(); i!= m_Dict->end(); i++) {
@@ -839,42 +884,42 @@ bool CIccTagDict::Write(CIccIO *pIO)
   //Write Dict records
   for (n=0, i=m_Dict->begin(); i!= m_Dict->end(); i++) {
     if (i->ptr) {
-      pos[n].posName.offset = pIO->Tell()-m_tagStart;
+      pos[n].posName.offset = (icUInt32Number)( pIO->Tell()-m_tagStart );
 
       for(chrptr = i->ptr->GetName().begin(); chrptr!=i->ptr->GetName().end(); chrptr++) {
         c=(icUnicodeChar)*chrptr;
         pIO->Write16(&c, 1);
       }
-      pos[n].posName.size = pIO->Tell()-m_tagStart - pos[n].posName.offset;
+      pos[n].posName.size = (icUInt32Number)(pIO->Tell()-m_tagStart - pos[n].posName.offset);
       pIO->Align32();
 
       if (i->ptr->IsValueSet()) {
-        pos[n].posValue.offset = pIO->Tell()-m_tagStart;
+        pos[n].posValue.offset = (icUInt32Number)(pIO->Tell()-m_tagStart);
         for(chrptr = i->ptr->ValueBegin(); chrptr!=i->ptr->ValueEnd(); chrptr++) {
           c=(icUnicodeChar)*chrptr;
           pIO->Write16(&c, 1);
         }
-        pos[n].posValue.size = pIO->Tell()-m_tagStart - pos[n].posValue.offset;
+        pos[n].posValue.size = (icUInt32Number)(pIO->Tell()-m_tagStart - pos[n].posValue.offset);
         pIO->Align32();
       }
 
       if (recSize>16 && i->ptr->GetNameLocalized()) {
-        pos[n].posNameLocalized.offset = pIO->Tell()-m_tagStart;
+        pos[n].posNameLocalized.offset = (icUInt32Number)(pIO->Tell()-m_tagStart);
         i->ptr->GetNameLocalized()->Write(pIO);
-        pos[n].posNameLocalized.size = pIO->Tell()-m_tagStart - pos[n].posNameLocalized.offset;
+        pos[n].posNameLocalized.size = (icUInt32Number)(pIO->Tell()-m_tagStart - pos[n].posNameLocalized.offset);
         pIO->Align32();
       }
 
       if (recSize>24 && i->ptr->GetValueLocalized()) {
-        pos[n].posValueLocalized.offset = pIO->Tell()-m_tagStart;
+        pos[n].posValueLocalized.offset = (icUInt32Number)(pIO->Tell()-m_tagStart);
         i->ptr->GetValueLocalized()->Write(pIO);
-        pos[n].posValueLocalized.size = pIO->Tell()-m_tagStart - pos[n].posValueLocalized.offset;
+        pos[n].posValueLocalized.size = (icUInt32Number)(pIO->Tell()-m_tagStart - pos[n].posValueLocalized.offset);
         pIO->Align32();
       }
       n++;
     }
   }
-  icUInt32Number endpos = pIO->Tell();
+  size_t endpos = pIO->Tell();
 
   pIO->Seek(dirpos, icSeekSet);
 

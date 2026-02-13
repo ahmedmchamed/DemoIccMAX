@@ -5,15 +5,11 @@ Contains:   Implementation of definitions and macros for ICC signature logging.
 
 Version:    V1
 
-Copyright:  (c) see ICC Software License
+Copyright:  (c) see Software License
 */
 
 /*
-* The ICC Software License, Version 0.2
-*
-*
-* Copyright (c) 2003-2012 The International Color Consortium. All rights 
-* reserved.
+* Copyright (c) International Color Consortium.
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions
@@ -84,8 +80,8 @@ Copyright:  (c) see ICC Software License
 
 #pragma once
 
-#ifndef ICC_SIGNATURE_UTILS_H
-#define ICC_SIGNATURE_UTILS_H
+#ifndef _ICC_SIGNATURE_UTILS_H
+#define _ICC_SIGNATURE_UTILS_H
 
 #include "IccDefs.h"
 #include <cstdint>
@@ -469,4 +465,4 @@ inline void DebugColorSpaceMeta(icUInt32Number sig) {
 
 
 
-#endif // ICC_SIGNATURE_UTILS_H
+#endif // _ICC_SIGNATURE_UTILS_H

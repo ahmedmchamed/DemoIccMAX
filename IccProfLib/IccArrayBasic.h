@@ -5,15 +5,11 @@
 
     Version:    V1
 
-    Copyright:  � see ICC Software License
+    Copyright:  (c) see Software License
 */
 
 /*
- * The ICC Software License, Version 0.2
- *
- *
- * Copyright (c) 2003-2012 The International Color Consortium. All rights 
- * reserved.
+ * Copyright (c) International Color Consortium.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -76,8 +72,8 @@
 #include <map>
 #include "IccDefs.h"
 #include "IccTagComposite.h"
-#ifdef USEREFICCMAXNAMESPACE
-namespace refIccMAX {
+#ifdef USEICCDEVNAMESPACE
+namespace iccDEV {
 #endif
 
 /**
@@ -152,7 +148,7 @@ public:
   virtual const icChar *GetClassName() const { return "CIccArrayNamedColor"; }
 
   void SetColorSpaces(icColorSpaceSignature csPcs, icColorSpaceSignature csDevice, 
-                      icSpectralColorSignature csSpectralPCS=icSigNoSpectralData,
+                      icColorSpaceSignature csSpectralPCS=icSigNoSpectralData,
                       const icSpectralRange *pSpectralRange = NULL,
                       const icSpectralRange *pBiSPectralRange = NULL);
 
@@ -192,7 +188,7 @@ protected:
 
   icColorSpaceSignature m_csPcs;
   icColorSpaceSignature m_csDevice;
-  icSpectralColorSignature m_csSpectralPcs;
+  icColorSpaceSignature m_csSpectralPcs;
   icSpectralRange m_spectralRange;
   icSpectralRange m_biSpectralRange;
 
@@ -207,8 +203,8 @@ protected:
 
 
 
-#ifdef USEREFICCMAXNAMESPACE
-} //namespace refIccMAX
+#ifdef USEICCDEVNAMESPACE
+} //namespace iccDEV
 #endif
 
 #endif // !defined(_ICCARRAYBASIC_H)

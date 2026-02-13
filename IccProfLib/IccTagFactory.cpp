@@ -75,8 +75,8 @@
 #include "IccProfile.h"
 #include <map>
 
-#ifdef USEREFICCMAXNAMESPACE
-namespace refIccMAX {
+#ifdef USEICCDEVNAMESPACE
+namespace iccDEV {
 #endif
 
 typedef std::map<icTagSignature, std::string> icTagSigToNameMap;
@@ -411,10 +411,10 @@ CIccTag* CIccSpecTagFactory::CreateTag(icTagTypeSignature tagSig)
     case icSigViewingConditionsType:
       return new CIccTagViewingConditions;
 
-    case icSigSpectralDataInfoTag:
+    case icSigSpectralDataInfoType:
       return new CIccTagSpectralDataInfo;
 
-    case icSigSpectralViewingConditionsTag:
+    case icSigSpectralViewingConditionsType:
       return new CIccTagSpectralViewingConditions;
 
     case icSigProfileSequenceDescType:
@@ -622,7 +622,7 @@ void CIccTagCreator::DoPushFactory(IIccTagFactory *pFactory)
   factoryStack.push_front(pFactory);
 }
 
-IIccTagFactory* CIccTagCreator::DoPopFactory(bool bAll /*=false*/)
+IIccTagFactory* CIccTagCreator::DoPopFactory(bool /* bAll =false */)
 {
 //  int nNum = (bAll ? 0 : 1);
 
@@ -635,6 +635,6 @@ IIccTagFactory* CIccTagCreator::DoPopFactory(bool bAll /*=false*/)
   return NULL;
 }
 
-#ifdef USEREFICCMAXNAMESPACE
-} //namespace refIccMAX
+#ifdef USEICCDEVNAMESPACE
+} //namespace iccDEV
 #endif

@@ -72,17 +72,17 @@
 #pragma warning( disable: 4786) //disable warning in <list.h>
 #endif
 
-#include <stdio.h>
-#include <math.h>
-#include <string.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cmath>
+#include <cstring>
+#include <cstdlib>
 #include "IccMpeACS.h"
 #include "IccIO.h"
 #include <map>
 #include "IccUtil.h"
 
-#ifdef USEREFICCMAXNAMESPACE
-namespace refIccMAX {
+#ifdef USEICCDEVNAMESPACE
+namespace iccDEV {
 #endif
 
 
@@ -133,7 +133,7 @@ void CIccMpeAcs::Describe(std::string &sDescription, int nVerboseness)
   else
     sDescription += "ELEM_eACS\n";
 
-  icGetSig(sigBuf, m_signature);
+  icGetSig(sigBuf, 30, m_signature);
   sDescription += "  Signature = ";
   sDescription += sigBuf;
   sDescription += "\n";
@@ -187,13 +187,13 @@ bool CIccMpeAcs::Read(icUInt32Number size, CIccIO *pIO)
   if (!pIO->Read32(&m_signature))
     return false;
 
-  icUInt32Number dataSize = size - headerSize;
+  size_t dataSize = size - headerSize;
 
   if (!AllocData(dataSize))
     return false;
 
   if (dataSize) {
-    if (pIO->Read8(m_pData, dataSize)!=(icInt32Number)dataSize)
+    if (pIO->Read8(m_pData, dataSize)!=dataSize)
       return false;
   }
 
@@ -233,7 +233,9 @@ bool CIccMpeAcs::Write(CIccIO *pIO)
     return false;
 
   if (m_pData && m_nDataSize) {
-    if (pIO->Write8(m_pData, m_nDataSize)!=m_nDataSize)
+    // ERROR - sign and unsigned comparison, this should be fixed at a higher level
+    // cast type to get it compiling for now
+    if (pIO->Write8(m_pData, m_nDataSize) != m_nDataSize)
       return false;
   }
 
@@ -250,7 +252,7 @@ bool CIccMpeAcs::Write(CIccIO *pIO)
 * 
 * Return: 
 ******************************************************************************/
-bool CIccMpeAcs::Begin(icElemInterp nInterp, CIccTagMultiProcessElement *pMPE)
+bool CIccMpeAcs::Begin(icElemInterp /* nInterp */, CIccTagMultiProcessElement * /* pMPE */)
 {
   if (m_nInputChannels!=m_nOutputChannels)
     return false;
@@ -268,7 +270,7 @@ bool CIccMpeAcs::Begin(icElemInterp nInterp, CIccTagMultiProcessElement *pMPE)
 * 
 * Return: 
 ******************************************************************************/
-void CIccMpeAcs::Apply(CIccApplyMpe *pApply, icFloatNumber *dstPixel, const icFloatNumber *srcPixel) const
+void CIccMpeAcs::Apply(CIccApplyMpe * /* pApply */, icFloatNumber *dstPixel, const icFloatNumber *srcPixel) const
 {
   memcpy(dstPixel, srcPixel, m_nInputChannels*sizeof(icFloatNumber));
 }
@@ -300,7 +302,7 @@ icValidateStatus CIccMpeAcs::Validate(std::string sigPath, std::string &sReport,
 * 
 * Return: 
 ******************************************************************************/
-bool CIccMpeAcs::AllocData(icUInt32Number size)
+bool CIccMpeAcs::AllocData(size_t size)
 {
   if (m_pData)
     free(m_pData);
@@ -486,6 +488,6 @@ CIccMpeEAcs::~CIccMpeEAcs()
 {
 }
 
-#ifdef USEREFICCMAXNAMESPACE
-} //namespace refIccMAX
+#ifdef USEICCDEVNAMESPACE
+} //namespace iccDEV
 #endif

@@ -5,15 +5,11 @@
 
     Version:    V1
 
-    Copyright:  (c) see ICC Software License
+    Copyright:  (c) see Software License
 */
 
 /*
- * The ICC Software License, Version 0.2
- *
- *
- * Copyright (c) 2003-2012 The International Color Consortium. All rights 
- * reserved.
+ * Copyright (c) International Color Consortium.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -76,8 +72,8 @@
 #include <list>
 #include <string>
 
-#if defined(__cplusplus) && defined(USEREFICCMAXNAMESPACE)
-namespace refIccMAX {
+#if defined(__cplusplus) && defined(USEICCDEVNAMESPACE)
+namespace iccDEV {
 #endif
 
 #ifdef __cplusplus
@@ -158,11 +154,8 @@ public:
 
   virtual const char *GetClassName() const { return "CIccProfile"; }
 
-  icHeader m_Header;
-
-  TagEntryList *m_Tags;
-
   CIccTag* FindTag(icSignature sig);
+  CIccTag* FindTag(IccTagEntry &entry);
   const CIccTag* FindTagConst(icSignature sig) const;
   CIccTag* FindTagOfType(icSignature tagSig, icTagTypeSignature typeSig);
 
@@ -175,16 +168,22 @@ public:
   bool Detach();
   bool HasIO() { return m_pAttachIO != NULL;  }
 
+  void CopyAttach(CIccProfile* pProfile, bool bSharedIO=false);
+
   bool Read(CIccIO *pIO, bool bUseSubProfile=false);
   icValidateStatus ReadValidate(CIccIO *pIO, std::string &sReport);
   bool Write(CIccIO *pIO, icProfileIDSaveMethod nWriteId=icVersionBasedID);
 
   bool ReadProfileID(icProfileID &profileID); //works if HasIO() is true 
 
+  bool ReadPccTags();
+
   void InitHeader();
-  icValidateStatus Validate(std::string &sReport, std::string sSigPath="") const;
+  icValidateStatus Validate(std::string &sReport, std::string sSigPath="", const CIccProfile *pParentProfile=NULL) const;
 
   icUInt16Number GetSpaceSamples() const;
+  icUInt16Number GetParentSpaceSamples() const;
+  icColorSpaceSignature GetParentColorSpace() const { return m_parentColorSpace; }
 
   bool AreTagsUnique() const;
 	bool IsTagPresent(icSignature sig) const { return (GetTag(sig)!=NULL); }
@@ -216,6 +215,7 @@ protected:
 
   void Cleanup();
   IccTagEntry* GetTag(icSignature sig) const;
+  IccTagEntry* GetTag(icSignature sig, const CIccProfile* pParent) const;
   IccTagEntry* GetTag(CIccTag *pTag) const;
   bool ReadBasic(CIccIO *pIO);
   bool LoadTag(IccTagEntry *pTagEntry, CIccIO *pIO, bool bReadAll=false);
@@ -224,7 +224,7 @@ protected:
   CIccIO* ConnectSubProfile(CIccIO *pIO, bool bOwnIO) const;
 
   // Profile Validation functions
-  icValidateStatus CheckRequiredTags(std::string &sReport) const;
+  icValidateStatus CheckRequiredTags(std::string &sReport, const CIccProfile *pParentProfile = NULL) const;
   bool CheckTagExclusion(std::string &sReport) const;
   icValidateStatus CheckHeader(std::string &sReport) const;
   icValidateStatus CheckTagTypes(std::string &sReport) const;
@@ -233,9 +233,20 @@ protected:
                    icArraySignature arraySig=icSigUndefinedArray) const;
   bool CheckFileSize(CIccIO *pIO) const;
 
-  CIccIO *m_pAttachIO;
 
-  TagPtrList *m_TagVals;
+public:
+
+  icHeader m_Header;
+  TagEntryList m_Tags;
+
+protected:
+
+  CIccIO *m_pAttachIO;
+  bool m_bSharedIO = false;
+
+  TagPtrList m_TagVals;
+
+  icColorSpaceSignature m_parentColorSpace = icSigNoColorData;
 };
 
 CIccProfile ICCPROFLIB_API *ReadIccProfile(const icChar *szFilename, bool bUseSubProfile=false);
@@ -266,8 +277,8 @@ typedef CIccProfile* CIccProfilePtr;
 
 #endif //__cplusplus
 
-#ifdef USEREFICCMAXNAMESPACE
-} //namespace refIccMAX
+#ifdef USEICCDEVNAMESPACE
+} //namespace iccDEV
 #endif
 
 #endif // !defined(_ICCPROFILE_H)

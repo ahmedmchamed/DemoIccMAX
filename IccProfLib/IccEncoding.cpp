@@ -122,6 +122,8 @@ public:
   virtual icStatusEncConvert ConvertFromParams(CIccProfilePtr &newIcc, CIccTagStruct *pParams, icHeader *pHeader);
 };
 
+#if 0
+// currently unused
 static icFloatNumber icGetParamFloatNum(CIccTagStruct *pParams, icColorEncodingParamsMemberSignature sig, icFloatNumber defaultValue=0)
 {
   CIccTagFloat32 *pTag = (CIccTagFloat32*)pParams->FindElemOfType(sig, icSigFloat32ArrayType);
@@ -131,6 +133,7 @@ static icFloatNumber icGetParamFloatNum(CIccTagStruct *pParams, icColorEncodingP
 
   return (*pTag)[0];
 }
+#endif
 
 static void icYxy2XYZVector(icFloatNumber*XYZ, icFloatNumber Y, icFloatNumber *xy, icUInt8Number idxOffset=1)
 {
