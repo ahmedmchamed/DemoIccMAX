@@ -6,12 +6,12 @@
 #include <vector>
 #include <string>
 
-namespace IccConvert {
-    class ColourData {
+namespace Utils {
+    class Config {
     public:
-        ColourData() = default;
+        Config() = default;
 
-        using Rows = std::vector<double>;
+        using Row = std::vector<double>;
 
         enum class RenderingIntent : std::uint16_t {
             PERCEPTUAL=0,
@@ -20,13 +20,15 @@ namespace IccConvert {
             ABSOLUTE=3
         };
 
-        void setInputCSVData(std::vector<Rows> const& inputData);
-        void setInputCSVData(std::vector<Rows> &&inputData);
+        void setInputSingleData(const std::string & string);
+        void setInputCSVData(std::vector<Row> const& inputData);
+        void setInputCSVData(std::vector<Row> &&inputData);
         void setOutputFile(std::filesystem::path const& file);
         void setRenderingIntent(std::uint32_t intent);
         void setDeviceToPcs(std::uint32_t deviceToPcsFlag);
         void setProfile(std::string const& profilePath);
-        [[nodiscard]] std::vector<Rows> getInputCSVData() const;
+        [[nodiscard]] std::vector<double> getInputSingleData() const;
+        [[nodiscard]] std::vector<Row> getInputCSVData() const;
         [[nodiscard]] std::filesystem::path getOutputFile() const;
         [[nodiscard]] RenderingIntent getRenderIntent() const;
         [[nodiscard]] bool isDeviceToPcs() const;
@@ -34,7 +36,8 @@ namespace IccConvert {
 
     private:
         bool mIsDeviceToPcs{ false };
-        std::vector<Rows> mInputCsvData{};
+        std::vector<double> mInputSingleData{};
+        std::vector<Row> mInputCsvData{};
         std::filesystem::path mOutputFile{};
         RenderingIntent mRenderIntent{ RenderingIntent::RELATIVE };
         std::string mProfilePath{};
