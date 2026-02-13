@@ -6,15 +6,11 @@
 
     Version:    V1
 
-    Copyright:  � see ICC Software License
+    Copyright:  (c) see Software License
 */
 
 /*
- * The ICC Software License, Version 0.2
- *
- *
- * Copyright (c) 2003-2012 The International Color Consortium. All rights 
- * reserved.
+ * Copyright (c) International Color Consortium.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -76,8 +72,8 @@
 #include <string>
 #include "IccDefs.h"
 
-#ifdef USEREFICCMAXNAMESPACE
-namespace refIccMAX {
+#ifdef USEICCDEVNAMESPACE
+namespace iccDEV {
 #endif
 
 class CIccIO;
@@ -133,7 +129,7 @@ public:
   virtual icArraySignature GetTagArrayType() const { return icSigUndefinedArray; }
 
   virtual bool IsArrayType() { return false; }
-  virtual bool IsMBBType() { return false; } //If true then CIccTag can be cast as an CIccMBB 
+  virtual bool IsMBBType() const { return false; } //If true then CIccTag can be cast as an CIccMBB
   virtual bool IsNumArrayType() const { return false;} //If true then CIccTag can be cast as a CIccTagNumArray
 
   virtual const icChar *GetClassName() const { return "CIccTag"; }
@@ -164,7 +160,7 @@ public:
   *
   * Returns true if Read is successful.
   */
-  virtual bool Read(icUInt32Number size, CIccIO *pIO) { return false; }
+  virtual bool Read(icUInt32Number /*size*/, CIccIO * /*pIO*/) { return false; }
 
   /**
   * Function: ReadAll() - Read All sub data for tag from file.
@@ -194,7 +190,7 @@ public:
   *
   * Returns true if Read is successful.
   */
-  virtual bool Read(icUInt32Number size, CIccIO *pIO, CIccProfile *pProfile) { return Read(size, pIO); }
+  virtual bool Read(icUInt32Number size, CIccIO *pIO, CIccProfile * /*pProfile*/) { return Read(size, pIO); }
 
 
   /**
@@ -208,7 +204,7 @@ public:
   *
   * Returns true if Write is successful.
   */
-  virtual bool Write(CIccIO *pIO) { return false; }
+  virtual bool Write(CIccIO * /*pIO*/) { return false; }
 
   /**
   * Function: Describe(sDescription)
@@ -218,7 +214,7 @@ public:
   * sDescription - A string to put the tag's description into.
 * * verbosenss   - integer value. Default=0. The larger the value, the more verbose the output. 
   */
-  virtual void Describe(std::string &sDescription, int nVerboseness=0) { sDescription.clear(); }
+  virtual void Describe(std::string &sDescription, int /*nVerboseness=0*/) { sDescription.clear(); }
 
   /**
    ******************************************************************************
@@ -833,7 +829,7 @@ public:
   CIccTagSparseMatrixArray(int nNumMatrices=1, int nChannelsPerMatrix=4);
   CIccTagSparseMatrixArray(const CIccTagSparseMatrixArray &ITSMA);
   CIccTagSparseMatrixArray &operator=(const CIccTagSparseMatrixArray &ITSMA);
-  virtual CIccTag* NewCopy() { return new CIccTagSparseMatrixArray(*this); }
+  virtual CIccTag* NewCopy() const { return new CIccTagSparseMatrixArray(*this); }
   virtual ~CIccTagSparseMatrixArray();
 
   virtual bool IsArrayType() { return m_nSize > 1; }
@@ -1827,8 +1823,8 @@ protected:
 };
 
 
-#ifdef USEREFICCMAXNAMESPACE
-} //namespace refIccMAX
+#ifdef USEICCDEVNAMESPACE
+} //namespace iccDEV
 #endif
 
 #endif // !defined(_ICCTAGBASIC_H)

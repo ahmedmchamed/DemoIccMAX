@@ -3,7 +3,7 @@ using System.Reflection;
 using Wacton.Unicolour.Icc;
 
 const string profilesRelativePath = "../../../../profiles/";
-const string converterRelativePath = "../../../../../cmake-build-debug/EntryPoint.exe";
+const string converterRelativePath = "../../../../../cmake-build-debug/ConvertBulk.exe";
 
 var exeLocation = Assembly.GetEntryAssembly()!.Location;
 var profilesPath = Path.GetFullPath(Path.Combine(exeLocation, profilesRelativePath));

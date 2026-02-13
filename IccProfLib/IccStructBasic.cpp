@@ -72,10 +72,10 @@
   #pragma warning( disable: 4786) //disable warning in <list.h>
   #include <windows.h>
 #endif
-#include <stdio.h>
-#include <math.h>
-#include <string.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cmath>
+#include <cstring>
+#include <cstdlib>
 #include "IccStructBasic.h"
 #include "IccUtil.h"
 #include "IccStructFactory.h"
@@ -86,8 +86,8 @@ using std::min;
 #define __min min
 #endif
 
-#ifdef USEREFICCMAXNAMESPACE
-namespace refIccMAX {
+#ifdef USEICCDEVNAMESPACE
+namespace iccDEV {
 #endif
 
 
@@ -114,7 +114,8 @@ IIccStruct* CIccStructUnknown::NewCopy(CIccTagStruct *pTagStruct) const
 
 void CIccStructUnknown::Describe(std::string &sDescription, int nVerboseness) const
 {
-  char buf[256];
+  const size_t bufSize = 256;
+  char buf[bufSize];
   CIccInfo info;
   int n;
 
@@ -126,10 +127,10 @@ void CIccStructUnknown::Describe(std::string &sDescription, int nVerboseness) co
       if (i->pTag) {
         if (n)
           sDescription += "\n";
-        sprintf(buf, "Begin SubTag(%s)\n", GetElemName(i->TagInfo.sig).c_str());
+        snprintf(buf, bufSize, "Begin SubTag(%s)\n", GetElemName(i->TagInfo.sig).c_str());
         sDescription += buf;
         i->pTag->Describe(sDescription, nVerboseness);
-        sprintf(buf, "End SubTag(%s)\n", GetElemName(i->TagInfo.sig).c_str());
+        snprintf(buf, bufSize, "End SubTag(%s)\n", GetElemName(i->TagInfo.sig).c_str());
         sDescription += buf;
       }
     }
@@ -291,6 +292,7 @@ static SIccElemNameSig g_IccStructColorEncodingParamsMbrTable[] = {
   { icSigCeptGreenPrimaryXYZMbr,               "cptGreenPrimaryXYZMbr" },
   { icSigCeptRedPrimaryXYZMbr,                 "ceptRedPrimaryXYZMbr" },
   { icSigCeptTransferFunctionMbr,              "ceptTransferFunctionMbr" },
+  { icSigCeptInverseTransferFunctionMbr,       "ceptInverseTransferFunctionMbr" },
   { icSigCeptLumaChromaMatrixMbr,              "ceptLumaChromaMatrixMbr" },
   { icSigCeptWhitePointLuminanceMbr,           "ceptWhitePointLuminanceMbr" },
   { icSigCeptWhitePointChromaticityMbr,        "ceptWhitePointChromaticityMbr" },
@@ -497,7 +499,7 @@ bool CIccStructNamedColor::GetTint(icFloatNumber *dstColor,
   if (!pData || !nSamples)
     return false;
 
-  int nEntries = pData->GetNumValues()/nSamples;
+  icUInt32Number nEntries = pData->GetNumValues()/nSamples;
   if (nEntries<1)
     return false;
 
@@ -637,6 +639,6 @@ IIccStruct* CIccStructTintZero::NewCopy(CIccTagStruct *pTagStruct) const
   return rv;
 }
 
-#ifdef USEREFICCMAXNAMESPACE
-} //namespace refIccMAX
+#ifdef USEICCDEVNAMESPACE
+} //namespace iccDEV
 #endif

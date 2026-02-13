@@ -5,15 +5,11 @@ Contains:   Header file for implementation of the CIccProfile Evaluation utilite
 
 Version:    V1
 
-Copyright:  (c) see ICC Software License
+Copyright:  (c) see Software License
 */
 
 /*
-* The ICC Software License, Version 0.2
-*
-*
-* Copyright (c) 2003-2012 The International Color Consortium. All rights 
-* reserved.
+* Copyright (c) International Color Consortium.
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions
@@ -73,8 +69,8 @@ Copyright:  (c) see ICC Software License
 
 #include "IccCmm.h"
 
-#ifdef USEREFICCMAXNAMESPACE
-namespace refIccMAX {
+#ifdef USEICCDEVNAMESPACE
+namespace iccDEV {
 #endif
 
 
@@ -92,8 +88,8 @@ public:
                                              bool buseMpeTags=true);
 };
 
-#ifdef USEREFICCMAXNAMESPACE
-}; //namespace refIccMAX
+#ifdef USEICCDEVNAMESPACE
+}; //namespace iccDEV
 #endif
 
-#endif // !defined(_ICCCMM_H)
+#endif // !defined(_ICCEVAL_H)

@@ -5,15 +5,11 @@
 
     Version:    V1
 
-    Copyright:  � see ICC Software License
+    Copyright:  (c) see Software License
 */
 
 /*
- * The ICC Software License, Version 0.2
- *
- *
- * Copyright (c) 2003-2012 The International Color Consortium. All rights 
- * reserved.
+ * Copyright (c) International Color Consortium.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -76,8 +72,8 @@
 #include <string>
 #include <limits>
 
-#ifdef USEREFICCMAXNAMESPACE
-namespace refIccMAX {
+#ifdef USEICCDEVNAMESPACE
+namespace iccDEV {
 #endif
 
 ICCPROFLIB_API void* icRealloc(void *ptr, size_t size);
@@ -95,9 +91,9 @@ ICCPROFLIB_API double icRoundOffset(double v);
 ICCPROFLIB_API icValidateStatus icMaxStatus(icValidateStatus s1, icValidateStatus s2);
 ICCPROFLIB_API bool  icIsSpaceCLR(icColorSpaceSignature sig);
 
-ICCPROFLIB_API void icColorIndexName(icChar *szName, icColorSpaceSignature csSig,
+ICCPROFLIB_API void icColorIndexName(icChar *szName, size_t nameSize, icColorSpaceSignature csSig,
                       int nIndex, int nColors, const icChar *szUnknown);
-ICCPROFLIB_API void icColorValue(icChar *szValue, icFloatNumber nValue,
+ICCPROFLIB_API void icColorValue(icChar *szValue, size_t nameSize, icFloatNumber nValue,
                   icColorSpaceSignature csSig, int nIndex, bool bUseLegacy=false);
 
 ICCPROFLIB_API bool icIsIllumD50(icXYZNumber xyz);
@@ -162,7 +158,7 @@ ICCPROFLIB_API icFloatNumber icDeltaE(const icFloatNumber *Lab1, const icFloatNu
 
 ICCPROFLIB_API icFloatNumber icRmsDif(const icFloatNumber *v1, const icFloatNumber *v2, icUInt32Number nSample);
 
-ICCPROFLIB_API bool icValidTagPos(const icPositionNumber& pos, icUInt32Number nTagHeaderSize, icUInt32Number nTagSize, bool bAllowEmpty=false);
+ICCPROFLIB_API bool icValidTagPos(const icPositionNumber& pos, size_t nTagHeaderSize, size_t nTagSize, bool bAllowEmpty=false);
 ICCPROFLIB_API bool icValidOverlap(const icPositionNumber& pos1, const icPositionNumber& pos2, bool bAllowSame=true);
 
 /**Floating point encoding of Lab in PCS is in range 0.0 to 1.0 */
@@ -177,13 +173,13 @@ ICCPROFLIB_API void icXyzFromPcs(icFloatNumber *XYZ);
 ICCPROFLIB_API void icXyzToPcs(icFloatNumber *XYZ);
 
 
-ICCPROFLIB_API void icMemDump(std::string &sDump, void *pBuf, icUInt32Number nNum);
+ICCPROFLIB_API void icMemDump(std::string &sDump, void *pBuf, size_t nNum);
 ICCPROFLIB_API void icMatrixDump(std::string &sDump, icS15Fixed16Number *pMatrix);
-ICCPROFLIB_API const icChar* icGetSig(icChar *pBuf, icUInt32Number sig, bool bGetHexVal=true);
-ICCPROFLIB_API const icChar* icGet16bitSig(icChar* pBuf, icUInt16Number sig, bool bGetHexVal=true);
-ICCPROFLIB_API const icChar* icGetSigStr(icChar *pBuf, icUInt32Number nSig);
-ICCPROFLIB_API const icChar* icGetColorSig(icChar *pBuf, icUInt32Number sig, bool bGetHexVal=true);
-ICCPROFLIB_API const icChar *icGetColorSigStr(icChar *pBuf, icUInt32Number nSig);
+ICCPROFLIB_API const icChar* icGetSig(icChar *pBuf, size_t bufSize, icUInt32Number sig, bool bGetHexVal=true);
+ICCPROFLIB_API const icChar* icGet16bitSig(icChar* pBuf, size_t bufSize, icUInt16Number sig, bool bGetHexVal=true);
+ICCPROFLIB_API const icChar* icGetSigStr(icChar *pBuf, size_t bufSize, icUInt32Number nSig);
+ICCPROFLIB_API const icChar* icGetColorSig(icChar *pBuf, size_t bufSize, icUInt32Number sig, bool bGetHexVal=true);
+ICCPROFLIB_API const icChar *icGetColorSigStr(icChar *pBuf, size_t bufSize, icUInt32Number nSig);
 
 #define icUtf8StrCmp(x, y) strcmp((const char*)x, (const char*)y)
 
@@ -215,7 +211,7 @@ inline void icSwab16Ptr(void *pVoid)
   tmp = ptr[0]; ptr[0] = ptr[1]; ptr[1] = tmp;
 }
 
-inline void icSwab16Array(void *pVoid, int num)
+inline void icSwab16Array(void *pVoid, size_t num)
 {
   icUInt8Number *ptr = (icUInt8Number*)pVoid;
   icUInt8Number tmp;
@@ -236,7 +232,7 @@ inline void icSwab32Ptr(void *pVoid)
   tmp = ptr[1]; ptr[1] = ptr[2]; ptr[2] = tmp;
 }
 
-inline void icSwab32Array(void *pVoid, int num)
+inline void icSwab32Array(void *pVoid, size_t num)
 {
   icUInt8Number *ptr = (icUInt8Number*)pVoid;
   icUInt8Number tmp;
@@ -261,7 +257,7 @@ inline void icSwab64Ptr(void *pVoid)
   tmp = ptr[3]; ptr[3] = ptr[4]; ptr[4] = tmp;
 }
 
-inline void icSwab64Array(void *pVoid, int num)
+inline void icSwab64Array(void *pVoid, size_t num)
 {
   icUInt8Number *ptr = (icUInt8Number*)pVoid;
   icUInt8Number tmp;
@@ -321,7 +317,7 @@ public:
   const icChar *GetCmmSigName(icCmmSignature sig);
   const icChar *GetReferenceMediumGamutSigNameName(icReferenceMediumGamutSignature sig);
   const icChar *GetColorimetricIntentImageStateName(icColorimetricIntentImageStateSignature sig);
-  const icChar *GetSpectralColorSigName(icSpectralColorSignature sig);
+  const icChar *GetSpectralColorSigName(icColorSpaceSignature sig);
   const icChar *GetElementTypeSigName(icElemTypeSignature sig);
 
   const icChar *GetSigName(icUInt32Number val);
@@ -355,8 +351,9 @@ public:
   bool IsValidSpectralSpace(icColorSpaceSignature sig);
 
 protected:
-  icChar m_szStr[128];
-  icChar m_szSigStr[128];
+  static const size_t m_bufSize = 128;
+  icChar m_szStr[m_bufSize];
+  icChar m_szSigStr[m_bufSize];
   std::string *m_str;
 };
 
@@ -376,7 +373,7 @@ class ICCPROFLIB_API CIccPixelBuf
 public:
   CIccPixelBuf(int nChan=icDefaultPixelBufSize);
   ~CIccPixelBuf();
-  icFloatNumber &operator[](int nPos) { return m_pixel[nPos]; }
+  icFloatNumber &operator[](size_t nPos) { return m_pixel[nPos]; }
   icFloatNumber *get() { return m_pixel;}
   
   operator icFloatNumber *() { return m_pixel; }
@@ -411,8 +408,8 @@ public:
 
 extern ICCPROFLIB_API CIccInfo icInfo;
 
-#ifdef USEREFICCMAXNAMESPACE
-} //namespace refIccMAX
+#ifdef USEICCDEVNAMESPACE
+} //namespace iccDEV
 #endif
 
-#endif
+#endif  // _ICCUTIL_H

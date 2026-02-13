@@ -70,9 +70,11 @@
 
 #include "IccIO.h"
 #include "IccUtil.h"
-#include <stdlib.h>
+#include <cstdlib>
 #include <memory.h>
-#include <string.h>
+#include <cstring>
+#include <cmath>
+
 
 #ifndef __max
 #define __max(a,b)  (((a) > (b)) ? (a) : (b))
@@ -81,8 +83,8 @@
 #define __min(a,b)  (((a) < (b)) ? (a) : (b))
 #endif
 
-#ifdef USEREFICCMAXNAMESPACE
-namespace refIccMAX {
+#ifdef USEICCDEVNAMESPACE
+namespace iccDEV {
 #endif
 
 //////////////////////////////////////////////////////////////////////
@@ -90,9 +92,12 @@ namespace refIccMAX {
 //////////////////////////////////////////////////////////////////////
 
 
-icInt32Number CIccIO::ReadLine(void *pBuf8, icInt32Number nNum/*=256*/)
+size_t CIccIO::ReadLine(void *pBuf8, size_t nNum/*=256*/)
 {
-  icInt32Number n=0;
+  if (!pBuf8)
+    return 0;
+
+  size_t n=0;
   icInt8Number c, *ptr=(icInt8Number*)pBuf8;
 
   while(n<nNum) {
@@ -111,22 +116,30 @@ icInt32Number CIccIO::ReadLine(void *pBuf8, icInt32Number nNum/*=256*/)
   return n;
 }
 
-icInt32Number CIccIO::Read16(void *pBuf16, icInt32Number nNum)
+size_t CIccIO::Read16(void *pBuf16, size_t nNum)
 {
+  if (!pBuf16)
+    return 0;
+
   nNum = Read8(pBuf16, nNum<<1)>>1;
+#ifdef ICC_BYTE_ORDER_LITTLE_ENDIAN
   icSwab16Array(pBuf16, nNum);
+#endif
 
   return nNum;
 }
 
-icInt32Number CIccIO::Write16(void *pBuf16, icInt32Number nNum)
+size_t CIccIO::Write16(void *pBuf16, size_t nNum)
 {
+  if (!pBuf16)
+    return 0;
+
 #ifndef ICC_BYTE_ORDER_LITTLE_ENDIAN
   return Write8(pBuf16, nNum<<1)>>1;
 #else
   icUInt16Number *ptr = (icUInt16Number*)pBuf16;
   icUInt16Number tmp;
-  icInt32Number i;
+  size_t i;
 
   for (i=0; i<nNum; i++) {
     tmp = *ptr;
@@ -140,23 +153,31 @@ icInt32Number CIccIO::Write16(void *pBuf16, icInt32Number nNum)
 #endif
 }
 
-icInt32Number CIccIO::Read32(void *pBuf32, icInt32Number nNum)
+size_t CIccIO::Read32(void *pBuf32, size_t nNum)
 {
+  if (!pBuf32)
+    return 0;
+
   nNum = Read8(pBuf32, nNum<<2)>>2;
+#ifdef ICC_BYTE_ORDER_LITTLE_ENDIAN
   icSwab32Array(pBuf32, nNum);
+#endif
 
   return nNum;
 }
 
 
-icInt32Number CIccIO::Write32(void *pBuf32, icInt32Number nNum)
+size_t CIccIO::Write32(void *pBuf32, size_t nNum)
 {
+  if (!pBuf32)
+    return 0;
+
 #ifndef ICC_BYTE_ORDER_LITTLE_ENDIAN
   return Write8(pBuf32, nNum<<2)>>2;
 #else
   icUInt32Number *ptr = (icUInt32Number*)pBuf32;
   icUInt32Number tmp;
-  icInt32Number i;
+  size_t i;
 
   for (i=0; i<nNum; i++) {
     tmp = *ptr;
@@ -170,23 +191,31 @@ icInt32Number CIccIO::Write32(void *pBuf32, icInt32Number nNum)
 #endif
 }
 
-icInt32Number CIccIO::Read64(void *pBuf64, icInt32Number nNum)
+size_t CIccIO::Read64(void *pBuf64, size_t nNum)
 {
+  if (!pBuf64)
+    return 0;
+
   nNum = Read8(pBuf64, nNum<<3)>>3;
+#ifdef ICC_BYTE_ORDER_LITTLE_ENDIAN
   icSwab64Array(pBuf64, nNum);
+#endif
 
   return nNum;
 }
 
 
-icInt32Number CIccIO::Write64(void *pBuf64, icInt32Number nNum)
+size_t CIccIO::Write64(void *pBuf64, size_t nNum)
 {
+  if (!pBuf64)
+    return 0;
+
 #ifndef ICC_BYTE_ORDER_LITTLE_ENDIAN
   return Write8(pBuf64, nNum<<3)>>3;
 #else
   icUInt64Number *ptr = (icUInt64Number*)pBuf64;
   icUInt64Number tmp;
-  icInt32Number i;
+  size_t i;
 
   for (i=0; i<nNum; i++) {
     tmp = *ptr;
@@ -200,11 +229,14 @@ icInt32Number CIccIO::Write64(void *pBuf64, icInt32Number nNum)
 #endif
 }
 
-icInt32Number CIccIO::ReadUInt8Float(void *pBufFloat, icInt32Number nNum)
+size_t CIccIO::ReadUInt8Float(void *pBufFloat, size_t nNum)
 {
+  if (!pBufFloat)
+    return 0;
+
   icFloatNumber *ptr = (icFloatNumber*)pBufFloat;
   icUInt8Number tmp;
-  icInt32Number i;
+  size_t i;
 
   for (i=0; i<nNum; i++) {
     if (Read8(&tmp, 1)!=1)
@@ -216,28 +248,37 @@ icInt32Number CIccIO::ReadUInt8Float(void *pBufFloat, icInt32Number nNum)
   return i;
 }
 
-icInt32Number CIccIO::WriteUInt8Float(void *pBufFloat, icInt32Number nNum)
+size_t CIccIO::WriteUInt8Float(void *pBufFloat, size_t nNum)
 {
+  if (!pBufFloat)
+    return 0;
+
   icFloatNumber *ptr = (icFloatNumber*)pBufFloat;
   icUInt8Number tmp;
-  icInt32Number i;
+  size_t i;
 
   for (i=0; i<nNum; i++) {
-    tmp = (icUInt8Number)(__max(0.0, __min(1.0, *ptr)) * 255.0 + 0.5);
+    icFloatNumber input = ptr[i];
+    if (std::isnan(input))
+      tmp = 0;
+    else
+      tmp = (icUInt8Number)(__max(0.0, __min(1.0, input)) * 255.0 + 0.5);
 
     if (Write8(&tmp, 1)!=1)
       break;
-    ptr++;
   }
 
   return i;
 }
 
-icInt32Number CIccIO::ReadUInt16Float(void *pBufFloat, icInt32Number nNum)
+size_t CIccIO::ReadUInt16Float(void *pBufFloat, size_t nNum)
 {
+  if (!pBufFloat)
+    return 0;
+
   icFloatNumber *ptr = (icFloatNumber*)pBufFloat;
   icUInt16Number tmp;
-  icInt32Number i;
+  size_t i;
 
   for (i=0; i<nNum; i++) {
     if (Read16(&tmp, 1)!=1)
@@ -249,28 +290,37 @@ icInt32Number CIccIO::ReadUInt16Float(void *pBufFloat, icInt32Number nNum)
   return i;
 }
 
-icInt32Number CIccIO::WriteUInt16Float(void *pBufFloat, icInt32Number nNum)
+size_t CIccIO::WriteUInt16Float(void *pBufFloat, size_t nNum)
 {
+  if (!pBufFloat)
+    return 0;
+
   icFloatNumber *ptr = (icFloatNumber*)pBufFloat;
   icUInt16Number tmp;
-  icInt32Number i;
+  size_t i;
 
   for (i=0; i<nNum; i++) {
-    tmp = (icUInt16Number)(__max(0.0, __min(1.0, *ptr)) * 65535.0 + 0.5);
+    icFloatNumber input = ptr[i];
+    if (std::isnan(input))
+      tmp = 0;
+    else
+      tmp = (icUInt16Number)(__max(0.0, __min(1.0, input)) * 65535.0 + 0.5);
 
     if (Write16(&tmp, 1)!=1)
       break;
-    ptr++;
   }
 
   return i;
 }
 
-icInt32Number CIccIO::ReadFloat16Float(void *pBufFloat, icInt32Number nNum)
+size_t CIccIO::ReadFloat16Float(void *pBufFloat, size_t nNum)
 {
+  if (!pBufFloat)
+    return 0;
+
   icFloatNumber *ptr = (icFloatNumber*)pBufFloat;
   icFloat16Number tmp;
-  icInt32Number i;
+  size_t i;
 
   for (i=0; i<nNum; i++) {
     if (Read16(&tmp, 1)!=1)
@@ -282,11 +332,14 @@ icInt32Number CIccIO::ReadFloat16Float(void *pBufFloat, icInt32Number nNum)
   return i;
 }
 
-icInt32Number CIccIO::WriteFloat16Float(void *pBufFloat, icInt32Number nNum)
+size_t CIccIO::WriteFloat16Float(void *pBufFloat, size_t nNum)
 {
+  if (!pBufFloat)
+    return 0;
+
   icFloatNumber *ptr = (icFloatNumber*)pBufFloat;
   icUInt16Number tmp;
-  icInt32Number i;
+  size_t i;
 
   for (i=0; i<nNum; i++) {
     tmp = icFtoF16(*ptr);
@@ -299,14 +352,17 @@ icInt32Number CIccIO::WriteFloat16Float(void *pBufFloat, icInt32Number nNum)
   return i;
 }
 
-icInt32Number CIccIO::ReadFloat32Float(void *pBufFloat, icInt32Number nNum)
+size_t CIccIO::ReadFloat32Float(void *pBufFloat, size_t nNum)
 {
   if (sizeof(icFloat32Number)==sizeof(icFloatNumber))
     return Read32(pBufFloat, nNum);
 
+  if (!pBufFloat)
+    return 0;
+
   icFloatNumber *ptr = (icFloatNumber*)pBufFloat;
   icFloat32Number tmp;
-  icInt32Number i;
+  size_t i;
 
   for (i=0; i<nNum; i++) {
     if (Read32(&tmp, 1)!=1)
@@ -318,14 +374,17 @@ icInt32Number CIccIO::ReadFloat32Float(void *pBufFloat, icInt32Number nNum)
   return i;
 }
 
-icInt32Number CIccIO::WriteFloat32Float(void *pBufFloat, icInt32Number nNum)
+size_t CIccIO::WriteFloat32Float(void *pBufFloat, size_t nNum)
 {
   if (sizeof(icFloat32Number)==sizeof(icFloatNumber))
     return Write32(pBufFloat, nNum);
 
+  if (!pBufFloat)
+    return 0;
+
   icFloatNumber *ptr = (icFloatNumber*)pBufFloat;
   icFloat32Number tmp;
-  icInt32Number i;
+  size_t i;
 
   for (i=0; i<nNum; i++) {
     tmp = (icFloat32Number)*ptr;
@@ -340,7 +399,7 @@ icInt32Number CIccIO::WriteFloat32Float(void *pBufFloat, icInt32Number nNum)
 
 bool CIccIO::Align32()
 {
-  int mod = GetLength() % 4;
+  size_t mod = GetLength() % 4;
   if (mod != 0) {
     icUInt8Number buf[4]={0,0,0,0};
     if (Seek(0, icSeekEnd)<0)
@@ -354,11 +413,11 @@ bool CIccIO::Align32()
 
 }
 
-bool CIccIO::Sync32(icUInt32Number nOffset)
+bool CIccIO::Sync32(size_t nOffset)
 {
   nOffset &= 0x3;
 
-  icUInt32Number nPos = ((Tell() - nOffset + 3)>>2)<<2;
+  size_t nPos = ((Tell() - nOffset + 3)>>2)<<2;
   if (Seek(nPos + nOffset, icSeekSet)<0)
     return false;
   return true;
@@ -449,53 +508,53 @@ void CIccFileIO::Close()
 }
 
 
-icInt32Number CIccFileIO::Read8(void *pBuf, icInt32Number nNum)
+size_t CIccFileIO::Read8(void *pBuf, size_t nNum)
 {
-  if (!m_fFile)
+  if (!m_fFile || !pBuf)
     return 0;
 
-  return (icInt32Number)fread(pBuf, 1, nNum, m_fFile);
+  return fread(pBuf, 1, nNum, m_fFile);
 }
 
 
-icInt32Number CIccFileIO::Write8(void *pBuf, icInt32Number nNum)
+size_t CIccFileIO::Write8(void *pBuf, size_t nNum)
 {
-  if (!m_fFile)
+  if (!m_fFile || !pBuf)
     return 0;
 
-  return (icInt32Number)fwrite(pBuf, 1, nNum, m_fFile);
+  return fwrite(pBuf, 1, nNum, m_fFile);
 }
 
 
-icInt32Number CIccFileIO::GetLength()
+size_t CIccFileIO::GetLength()
 {
   if (!m_fFile)
     return 0;
 
   fflush(m_fFile);
-  icInt32Number current = (icInt32Number)ftell(m_fFile), end;
+  size_t current = ftell(m_fFile);
   fseek (m_fFile, 0, SEEK_END);
-  end = (icInt32Number)ftell(m_fFile);
+  size_t end = ftell(m_fFile);
   fseek (m_fFile, current, SEEK_SET);
   return end;
 }
 
 
-icInt32Number CIccFileIO::Seek(icInt32Number nOffset, icSeekVal pos)
+int64_t CIccFileIO::Seek(int64_t nOffset, icSeekVal pos)
 {
   if (!m_fFile)
     return -1;
 
-  return !fseek(m_fFile, nOffset, pos) ? (icInt32Number)ftell(m_fFile) : -1;
+  return !fseek(m_fFile, nOffset, pos) ? ftell(m_fFile) : -1;
 }
 
 
-icInt32Number CIccFileIO::Tell()
+int64_t CIccFileIO::Tell()
 {
   if (!m_fFile)
     return -1;
 
-  return (icInt32Number)ftell(m_fFile);
+  return ftell(m_fFile);
 }
 
 
@@ -516,7 +575,7 @@ CIccEmbedIO::~CIccEmbedIO()
   Close();
 }
 
-bool CIccEmbedIO::Attach(CIccIO *pIO, icInt32Number nSize/* =0 */, bool bOwnIO/* =false */)
+bool CIccEmbedIO::Attach(CIccIO *pIO, size_t nSize/* =0 */, bool bOwnIO/* =false */)
 {
   if (!pIO)
     return false;
@@ -544,16 +603,16 @@ void CIccEmbedIO::Close()
 }
 
 
-icInt32Number CIccEmbedIO::Read8(void *pBuf, icInt32Number nNum)
+size_t CIccEmbedIO::Read8(void *pBuf, size_t nNum)
 {
   if (!m_pIO)
     return 0;
 
   if (m_nSize > 0) {
-    icUInt32Number nPos = m_pIO->Tell();
-    icUInt32Number nOffset = nPos - m_nStartPos;
+    size_t nPos = m_pIO->Tell();
+    size_t nOffset = nPos - m_nStartPos;
 
-    if (nOffset + nNum > (icUInt64Number)m_nSize)
+    if (nOffset + nNum > m_nSize)
       nNum = m_nSize - nOffset;
   }
 
@@ -561,7 +620,7 @@ icInt32Number CIccEmbedIO::Read8(void *pBuf, icInt32Number nNum)
 }
 
 
-icInt32Number CIccEmbedIO::Write8(void *pBuf, icInt32Number nNum)
+size_t CIccEmbedIO::Write8(void *pBuf, size_t nNum)
 {
   if (!m_pIO)
     return 0;
@@ -570,7 +629,7 @@ icInt32Number CIccEmbedIO::Write8(void *pBuf, icInt32Number nNum)
 }
 
 
-icInt32Number CIccEmbedIO::GetLength()
+size_t CIccEmbedIO::GetLength()
 {
   if (!m_pIO)
     return 0;
@@ -582,15 +641,15 @@ icInt32Number CIccEmbedIO::GetLength()
 }
 
 
-icInt32Number CIccEmbedIO::Seek(icInt32Number nOffset, icSeekVal pos)
+int64_t CIccEmbedIO::Seek(int64_t nOffset, icSeekVal pos)
 {
-  icInt32Number nPos;
+  int64_t nPos;
   if (!m_pIO)
     return -1;
 
   if (pos == icSeekSet) {
-    if (m_nSize > 0 && nOffset > m_nSize)
-      nOffset = m_nSize;
+    if (m_nSize > 0 && nOffset > int64_t(m_nSize))
+      nOffset = int64_t(m_nSize);
     else if (nOffset < 0)
       nOffset = m_nStartPos;
 
@@ -613,7 +672,7 @@ icInt32Number CIccEmbedIO::Seek(icInt32Number nOffset, icSeekVal pos)
   else {//pos == icSeekCur
     nOffset = m_pIO->Tell() + nOffset;
 
-    if (m_nSize && nOffset - m_nStartPos > m_nSize)
+    if (m_nSize && (nOffset - m_nStartPos) > int64_t(m_nSize))
       nOffset = m_nStartPos + m_nSize;
     else if (nOffset < m_nStartPos)
       nOffset = m_nStartPos;
@@ -628,14 +687,14 @@ icInt32Number CIccEmbedIO::Seek(icInt32Number nOffset, icSeekVal pos)
 }
 
 
-icInt32Number CIccEmbedIO::Tell()
+int64_t CIccEmbedIO::Tell()
 {
   if (!m_pIO)
     return -1;
 
-  icUInt32Number nPos = m_pIO->Tell();
+  int64_t nPos = m_pIO->Tell();
 
-  if ((icInt32Number)nPos >= m_nStartPos)
+  if (nPos >= m_nStartPos)
     return nPos - m_nStartPos;
 
   return nPos;
@@ -662,7 +721,7 @@ CIccMemIO::~CIccMemIO()
 }
 
 
-bool CIccMemIO::Alloc(icUInt32Number nSize, bool bWrite)
+bool CIccMemIO::Alloc(size_t nSize, bool bWrite)
 {
   if (m_pData)
     Close();
@@ -683,7 +742,7 @@ bool CIccMemIO::Alloc(icUInt32Number nSize, bool bWrite)
 }
 
 
-bool CIccMemIO::Attach(icUInt8Number *pData, icUInt32Number nSize, bool bWrite)
+bool CIccMemIO::Attach(icUInt8Number *pData, size_t nSize, bool bWrite)
 {
   if (!pData)
     return false;
@@ -719,12 +778,12 @@ void CIccMemIO::Close()
 }
 
 
-icInt32Number CIccMemIO::Read8(void *pBuf, icInt32Number nNum)
+size_t CIccMemIO::Read8(void *pBuf, size_t nNum)
 {
-  if (!m_pData)
+  if (!m_pData || !pBuf)
     return 0;
   if (nNum > 0) {
-      nNum = __min((icInt32Number) (m_nSize - m_nPos), nNum);
+      nNum = __min((m_nSize - m_nPos), nNum);
       memcpy(pBuf, m_pData + m_nPos, nNum);
       m_nPos += nNum;
   }
@@ -732,12 +791,12 @@ icInt32Number CIccMemIO::Read8(void *pBuf, icInt32Number nNum)
 }
 
 
-icInt32Number CIccMemIO::Write8(void *pBuf, icInt32Number nNum)
+size_t CIccMemIO::Write8(void *pBuf, size_t nNum)
 {
-  if (!m_pData)
+  if (!m_pData || !pBuf)
     return 0;
 
-  nNum = __min((icInt32Number)(m_nAvail-m_nPos), nNum);
+  nNum = __min((m_nAvail-m_nPos), nNum);
 
   memcpy(m_pData + m_nPos, pBuf, nNum);
 
@@ -749,7 +808,7 @@ icInt32Number CIccMemIO::Write8(void *pBuf, icInt32Number nNum)
 }
 
 
-icInt32Number CIccMemIO::GetLength()
+size_t CIccMemIO::GetLength()
 {
   if (!m_pData)
     return 0;
@@ -758,21 +817,21 @@ icInt32Number CIccMemIO::GetLength()
 }
 
 
-icInt32Number CIccMemIO::Seek(icInt32Number nOffset, icSeekVal pos)
+int64_t CIccMemIO::Seek(int64_t nOffset, icSeekVal pos)
 {
   if (!m_pData)
     return -1;
 
-  icInt32Number nPos;
+  int64_t nPos;
   switch(pos) {
   case icSeekSet:
     nPos = nOffset;
     break;
   case icSeekCur:
-    nPos = (icInt32Number)m_nPos + nOffset;
+    nPos = m_nPos + nOffset;
     break;
   case icSeekEnd:
-    nPos = (icInt32Number)m_nSize + nOffset;
+    nPos = m_nSize + nOffset;
     break;
   default:
     nPos = 0;
@@ -797,12 +856,12 @@ icInt32Number CIccMemIO::Seek(icInt32Number nOffset, icSeekVal pos)
 }
 
 
-icInt32Number CIccMemIO::Tell()
+int64_t CIccMemIO::Tell()
 {
   if (!m_pData)
     return -1;
 
-  return (icInt32Number)m_nPos;
+  return m_nPos;
 }
 
 ///////////////////////////////
@@ -835,10 +894,13 @@ void CIccNullIO::Close()
 }
 
 
-icInt32Number CIccNullIO::Read8(void *pBuf, icInt32Number nNum)
+size_t CIccNullIO::Read8(void *pBuf, size_t nNum)
 {
-  icInt32Number nLeft = m_nSize - m_nPos;
-  icInt32Number nRead = (nNum <= (icInt32Number)nLeft) ? nNum : nLeft;
+  if (!pBuf)
+    return 0;
+
+  size_t nLeft = m_nSize - m_nPos;
+  size_t nRead = (nNum <= nLeft) ? nNum : nLeft;
 
   memset(pBuf, 0, nRead);
   m_nPos += nRead;
@@ -847,7 +909,7 @@ icInt32Number CIccNullIO::Read8(void *pBuf, icInt32Number nNum)
 }
 
 
-icInt32Number CIccNullIO::Write8(void *pBuf, icInt32Number nNum)
+size_t CIccNullIO::Write8(void * /* pBuf */, size_t nNum)
 {
   m_nPos += nNum;
   if (m_nPos > m_nSize)
@@ -857,24 +919,24 @@ icInt32Number CIccNullIO::Write8(void *pBuf, icInt32Number nNum)
 }
 
 
-icInt32Number CIccNullIO::GetLength()
+size_t CIccNullIO::GetLength()
 {
   return m_nSize;
 }
 
 
-icInt32Number CIccNullIO::Seek(icInt32Number nOffset, icSeekVal pos)
+int64_t CIccNullIO::Seek(int64_t nOffset, icSeekVal pos)
 {
-  icInt32Number nPos;
+  int64_t nPos;
   switch(pos) {
   case icSeekSet:
     nPos = nOffset;
     break;
   case icSeekCur:
-    nPos = (icInt32Number)m_nPos + nOffset;
+    nPos = m_nPos + nOffset;
     break;
   case icSeekEnd:
-    nPos = (icInt32Number)m_nSize + nOffset;
+    nPos = m_nSize + nOffset;
     break;
   default:
     nPos = 0;
@@ -884,7 +946,7 @@ icInt32Number CIccNullIO::Seek(icInt32Number nOffset, icSeekVal pos)
   if (nPos < 0)
     return -1;
 
-  m_nPos = (icUInt32Number)nPos;
+  m_nPos = nPos;
 
   if (m_nPos>m_nSize)
     m_nSize = m_nPos;
@@ -893,12 +955,12 @@ icInt32Number CIccNullIO::Seek(icInt32Number nOffset, icSeekVal pos)
 }
 
 
-icInt32Number CIccNullIO::Tell()
+int64_t CIccNullIO::Tell()
 {
-  return (icInt32Number)m_nPos;
+  return m_nPos;
 }
 
 
-#ifdef USEREFICCMAXNAMESPACE
-} //namespace refIccMAX
+#ifdef USEICCDEVNAMESPACE
+} //namespace iccDEV
 #endif

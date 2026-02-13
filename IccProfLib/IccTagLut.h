@@ -6,15 +6,11 @@
 
     Version:    V1
 
-    Copyright:  � see ICC Software License
+    Copyright:  (c) see Software License
 */
 
 /*
- * The ICC Software License, Version 0.2
- *
- *
- * Copyright (c) 2005 The International Color Consortium. All rights 
- * reserved.
+ * Copyright (c) International Color Consortium.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -74,8 +70,8 @@
 #if !defined(_ICCTAGLUT_H)
 #define _ICCTAGLUT_H
 
-#ifdef USEREFICCMAXNAMESPACE
-namespace refIccMAX {
+#ifdef USEICCDEVNAMESPACE
+namespace iccDEV {
 #endif
 
 #include "IccTagBasic.h"
@@ -94,8 +90,8 @@ public:
   virtual CIccTag *NewCopy() const { return new CIccCurve; } 
   virtual ~CIccCurve() {}
 
-  virtual void DumpLut(std::string &sDescription, const icChar *szName,
-    icColorSpaceSignature csSig, int nIndex, int nVerboseness) {}
+  virtual void DumpLut(std::string & /*sDescription*/, const icChar * /*szName*/,
+    icColorSpaceSignature /*csSig*/, int /*nIndex*/, int /*nVerboseness*/) {}
 
   virtual void Begin() {}
   virtual icFloatNumber Apply(icFloatNumber v) const { return v; }
@@ -382,7 +378,7 @@ public:
   void SetPrecision(icUInt8Number nPrecision) { m_nPrecision = nPrecision; }
 
 protected:
-  void Iterate(std::string &sDescription, icUInt8Number nIndex, icUInt32Number nPos, bool bUseLegacy=false);
+  void Iterate(std::string &sDescription, icUInt8Number nIndex, icUInt32Number nPos, size_t bufSize, bool bUseLegacy=false );
   void SubIterate(IIccCLUTExec* pExec, icUInt8Number nIndex, icUInt32Number nPos);
 
   icCLUTCLIPFUNC UnitClip;
@@ -436,13 +432,13 @@ public:
   virtual CIccTag* NewCopy() const {return new CIccMBB(*this);}
   virtual ~CIccMBB();
 
-  virtual bool IsMBBType() { return true;}
+  virtual bool IsMBBType() const { return true; }
 
-  virtual icUInt8Number GetPrecision() { return 2; }
-  virtual bool IsInputMatrix() { return m_bInputMatrix; } //Is matrix on input side of CLUT?
+  virtual icUInt8Number GetPrecision() const { return 2; }
+  virtual bool IsInputMatrix() const { return m_bInputMatrix; } //Is matrix on input side of CLUT?
   virtual bool UseLegacyPCS() const { return false; } //Treat Lab Encoding differently?
 
-  bool IsInputB() { return IsInputMatrix(); }
+  bool IsInputB() const { return IsInputMatrix(); }
   bool SwapMBCurves() { return m_bUseMCurvesAsBCurves; }
 
   void Cleanup();
@@ -454,7 +450,7 @@ public:
   virtual void Describe(std::string &sDescription, int nVerboseness);
 
   virtual void SetColorSpaces(icColorSpaceSignature csInput, icColorSpaceSignature csOutput);
-  virtual icValidateStatus Validate(std::string sigPath, std::string &sReport, const CIccProfile* pProfile=NULL);
+  virtual icValidateStatus Validate(std::string sigPath, std::string &sReport, const CIccProfile* pProfile=NULL) const;
   icColorSpaceSignature GetCsInput() { return m_csInput; }
   icColorSpaceSignature GetCsOutput() { return m_csOutput; }
 
@@ -511,7 +507,7 @@ public:
 
   bool Read(icUInt32Number size, CIccIO *pIO);
   bool Write(CIccIO *pIO);
-  virtual icValidateStatus Validate(std::string sigPath, std::string &sReport, const CIccProfile* pProfile=NULL);
+  virtual icValidateStatus Validate(std::string sigPath, std::string &sReport, const CIccProfile* pProfile=NULL) const;
 
 protected:
   icUInt16Number m_nReservedWord;
@@ -533,7 +529,7 @@ public:
   virtual CIccTag* NewCopy() const { return new CIccTagLutBtoA(*this); }
 
   virtual icTagTypeSignature GetType() const { return icSigLutBtoAType; }
-  virtual icValidateStatus Validate(std::string sigPath, std::string &sReport, const CIccProfile* pProfile=NULL);
+  virtual icValidateStatus Validate(std::string sigPath, std::string &sReport, const CIccProfile* pProfile=NULL) const;
 };
 
 
@@ -554,13 +550,13 @@ public:
   virtual ~CIccTagLut8();
 
   virtual icTagTypeSignature GetType() const { return icSigLut8Type; }
-  virtual icUInt8Number GetPrecision() { return 1; }
+  virtual icUInt8Number GetPrecision() const { return 1; }
 
   bool Read(icUInt32Number size, CIccIO *pIO);
   bool Write(CIccIO *pIO);
 
   virtual void SetColorSpaces(icColorSpaceSignature csInput, icColorSpaceSignature csOutput);
-  virtual icValidateStatus Validate(std::string sigPath, std::string &sReport, const CIccProfile* pProfile=NULL);
+  virtual icValidateStatus Validate(std::string sigPath, std::string &sReport, const CIccProfile* pProfile=NULL) const;
 
 protected:
   icUInt8Number m_nReservedByte;
@@ -590,7 +586,7 @@ public:
   bool Write(CIccIO *pIO);
 
   virtual void SetColorSpaces(icColorSpaceSignature csInput, icColorSpaceSignature csOutput);
-  virtual icValidateStatus Validate(std::string sigPath, std::string &sReport, const CIccProfile* pProfile=NULL);
+  virtual icValidateStatus Validate(std::string sigPath, std::string &sReport, const CIccProfile* pProfile=NULL) const;
 
 protected:
   icUInt8Number m_nReservedByte;
@@ -666,8 +662,8 @@ protected:
 
 
 
-#ifdef USEREFICCMAXNAMESPACE
-} //namespace refIccMAX
+#ifdef USEICCDEVNAMESPACE
+} //namespace iccDEV
 #endif
 
-#endif // !defined(_ICCTAG_H)
+#endif // !defined(_ICCTAGLUT_H)

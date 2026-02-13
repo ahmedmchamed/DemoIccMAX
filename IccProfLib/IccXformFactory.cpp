@@ -71,8 +71,8 @@
 
 #include "IccXformFactory.h"
 
-#ifdef USEREFICCMAXNAMESPACE
-namespace refIccMAX {
+#ifdef USEICCDEVNAMESPACE
+namespace iccDEV {
 #endif
 
 CIccXform* CIccBaseXformFactory::CreateXform(icXformType xformSig, CIccTag *pTag/*=NULL*/, CIccCreateXformHintManager *pHintManager/*=NULL*/)
@@ -156,7 +156,7 @@ void CIccXformCreator::DoPushFactory(IIccXformFactory *pFactory)
   factoryStack.push_front(pFactory);
 }
 
-IIccXformFactory* CIccXformCreator::DoPopFactory(bool bAll /*=false*/)
+IIccXformFactory* CIccXformCreator::DoPopFactory(bool /* bAll =false */)
 {
   //int nNum = (bAll ? 0 : 1);
 
@@ -169,6 +169,6 @@ IIccXformFactory* CIccXformCreator::DoPopFactory(bool bAll /*=false*/)
   return NULL;
 }
 
-#ifdef USEREFICCMAXNAMESPACE
-} //namespace refIccMAX
+#ifdef USEICCDEVNAMESPACE
+} //namespace iccDEV
 #endif

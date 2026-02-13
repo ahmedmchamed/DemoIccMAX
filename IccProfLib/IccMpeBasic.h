@@ -6,15 +6,11 @@ Contains:   Header for implementation of Basic CIccTagMPE elements
 
 Version:    V1
 
-Copyright:  (c) see ICC Software License
+Copyright:  (c) see Software License
 */
 
 /*
-* The ICC Software License, Version 0.2
-*
-*
-* Copyright (c) 2005 The International Color Consortium. All rights 
-* reserved.
+* Copyright (c) International Color Consortium.
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions
@@ -73,15 +69,15 @@ Copyright:  (c) see ICC Software License
 //
 //////////////////////////////////////////////////////////////////////
 
-#ifndef _ICCELEMBASIC_H
-#define _ICCELEMBASIC_H
+#ifndef _ICCMPEBASIC_H
+#define _ICCMPEBASIC_H
 
 #include "IccTagMPE.h"
 
 
 //CIccFloatTag support
-#ifdef USEREFICCMAXNAMESPACE
-namespace refIccMAX {
+#ifdef USEICCDEVNAMESPACE
+namespace iccDEV {
 #endif
 
 /**
@@ -104,7 +100,7 @@ public:
 
   virtual void Describe(std::string &sDescription, int nVerboseness)=0;
 
-  virtual bool Read(icUInt32Number size, CIccIO *pIO)=0;
+  virtual bool Read(size_t size, CIccIO *pIO)=0;
   virtual bool Write(CIccIO *pIO)=0;
 
   virtual bool Begin(CIccCurveSegment *pPrevSeg) = 0;
@@ -145,7 +141,7 @@ public:
 
   void SetFunction(icUInt16Number functionType, icUInt8Number num_parameters, icFloatNumber *parameters);
 
-  virtual bool Read(icUInt32Number size, CIccIO *pIO);
+  virtual bool Read(size_t size, CIccIO *pIO);
   virtual bool Write(CIccIO *pIO);
 
   virtual bool Begin(CIccCurveSegment *pPrevSeg);
@@ -187,7 +183,7 @@ public:
 
   virtual void Describe(std::string &sDescription, int nVerboseness);
 
-  virtual bool Read(icUInt32Number size, CIccIO *pIO);
+  virtual bool Read(size_t size, CIccIO *pIO);
   virtual bool Write(CIccIO *pIO);
 
   virtual bool Begin(CIccCurveSegment *pPrevSeg);
@@ -385,7 +381,7 @@ public:
   virtual icValidateStatus Validate(std::string sigPath, std::string &sReport, const CIccTagMultiProcessElement* pMPE = NULL, const CIccProfile* pProfile = NULL) const;
 
 protected:
-  bool SetStorageType(icUInt16Number nStorateType) { return false; }
+  bool SetStorageType(icUInt16Number /*nStorateType*/) { return false; }
   icUInt16Number GetStorageType() { return 0; }
 
   icUInt32Number m_nReserved;
@@ -831,10 +827,10 @@ public:
 };
 
 //CIccMPElements support
-#ifdef USEREFICCMAXNAMESPACE
+#ifdef USEICCDEVNAMESPACE
 }
 #endif
 
 
 
-#endif //_ICCELEMBASIC_H
+#endif //_ICCMPEBASIC_H

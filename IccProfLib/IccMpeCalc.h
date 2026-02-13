@@ -6,15 +6,11 @@ Contains:   Header for implementation of Channel Calculator element
 
 Version:    V1
 
-Copyright:  (c) see ICC Software License
+Copyright:  (c) see Software License
 */
 
 /*
- * The ICC Software License, Version 0.1
- *
- *
- * Copyright (c) 2003-2006 The International Color Consortium. All rights 
- * reserved.
+ * Copyright (c) International Color Consortium.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -72,16 +68,16 @@ Copyright:  (c) see ICC Software License
 //
 //////////////////////////////////////////////////////////////////////
 
-#ifndef _ICCELEMCALC_H
-#define _ICCELEMCALC_H
+#ifndef _ICCMPECALC_H
+#define _ICCMPECALC_H
 
 #include "IccTagMPE.h"
 #include "IccSolve.h"
 #include <vector>
 
 //CIccFloatTag support
-#ifdef USEREFICCMAXNAMESPACE
-namespace refIccMAX {
+#ifdef USEICCDEVNAMESPACE
+namespace iccDEV {
 #endif
 
 //Declare forward references
@@ -108,6 +104,9 @@ typedef enum {
  * Calculator operator signatures
  ************************************************************************/
 typedef enum {
+  // useful value that is not defined by the spec.
+  icSigNullDataOp                   = 0x00000000, /* not valid, used for data range */
+
   //Floating point constant operation
   icSigDataOp                       = 0x64617461,  /* 'data' */
   icSigPiOp                         = 0x70692020,  /* 'pi  ' */
@@ -216,6 +215,9 @@ typedef enum {
   icSigDefaultOp                    = 0x64666c74,  /* 'dflt' */
 
   //Boolean operation
+  
+  // useful value that is not defined by the spec.
+  icSigLastValueRangeOp             = 0xffffffff,    /* not valid, used for data range */
 }icSigCalcOp;
 
 
@@ -301,7 +303,7 @@ public:
 
   virtual bool IsValid(CIccMpeCalculator *pCalc, SIccCalcOp &op) { return op.IsValidOp(pCalc); }
 
-  virtual bool Exec(SIccCalcOp *op, SIccOpState &s) {return false;}
+  virtual bool Exec(SIccCalcOp * /*op*/, SIccOpState & /*s*/) {return false;}
 };
 
 
@@ -560,8 +562,8 @@ public:
 #define icCalcDebuggerConsole ((IIccCalcDebugger*)-1) 
 
 //CIccMPElements support  
-#ifdef USEREFICCMAXNAMESPACE
+#ifdef USEICCDEVNAMESPACE
 }
 #endif
 
-#endif //_ICCELEMCALC_H
+#endif //_ICCMPECALC_H

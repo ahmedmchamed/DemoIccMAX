@@ -72,18 +72,18 @@
 #pragma warning( disable: 4786) //disable warning in <list.h>
 #endif
 
-#include <stdio.h>
-#include <math.h>
-#include <string.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cmath>
+#include <cstring>
+#include <cstdlib>
 #include "IccTagMPE.h"
 #include "IccIO.h"
 #include "IccMpeFactory.h"
 #include <map>
 #include "IccUtil.h"
 
-#ifdef USEREFICCMAXNAMESPACE
-namespace refIccMAX {
+#ifdef USEICCDEVNAMESPACE
+namespace iccDEV {
 #endif
 
 /**
@@ -143,7 +143,7 @@ CIccMultiProcessElement* CIccMultiProcessElement::Create(icElemTypeSignature sig
  * 
  * Return: 
 ******************************************************************************/
-CIccApplyMpe* CIccMultiProcessElement::GetNewApply( CIccApplyTagMpe *pApplyTag )
+CIccApplyMpe* CIccMultiProcessElement::GetNewApply( CIccApplyTagMpe * /* 'pApplyTag */ )
 {
   return new CIccApplyMpe(this);
 }
@@ -285,10 +285,11 @@ void CIccMpeUnknown::SetChannels(icUInt16Number nInputChannels, icUInt16Number n
  ******************************************************************************/
 void CIccMpeUnknown::Describe(std::string &sDescription, int nVerboseness)
 {
-  icChar buf[128], sigbuf[40];
+  const size_t bufSize = 128;
+  icChar buf[bufSize], sigbuf[40];
 
-  sprintf(buf, "Unknown Element(%s) Type of %u Bytes.", 
-          icGetSig(sigbuf, m_sig), m_nSize);
+  snprintf(buf, bufSize, "Unknown Element(%s) Type of %u Bytes.",
+          icGetSig(sigbuf, 40, m_sig), m_nSize);
   sDescription += buf;
 
   if (nVerboseness > 50) {
@@ -308,11 +309,19 @@ void CIccMpeUnknown::Describe(std::string &sDescription, int nVerboseness)
  * 
  * Return: 
  ******************************************************************************/
-bool CIccMpeUnknown::SetDataSize(icUInt32Number nSize, bool bZeroData/*=true*/)
+bool CIccMpeUnknown::SetDataSize(icUInt32Number nSize, bool /* bZeroData =true */)
 {
   bool rv = true;
   if (m_pData)
     free(m_pData);
+
+  // Prevent excessive allocation - limit to 256MB for unknown MPE data
+  const icUInt32Number MAX_MPE_UNKNOWN_SIZE = 268435456; // 256 MB
+  if (nSize > MAX_MPE_UNKNOWN_SIZE) {
+    m_pData = NULL;
+    m_nSize = 0;
+    return false;
+  }
 
   m_nSize = nSize;
   if (m_nSize) {
@@ -340,7 +349,7 @@ bool CIccMpeUnknown::SetDataSize(icUInt32Number nSize, bool bZeroData/*=true*/)
  ******************************************************************************/
 bool CIccMpeUnknown::Read(icUInt32Number nSize, CIccIO *pIO)
 {
-  icUInt32Number nHeaderSize = sizeof(icTagTypeSignature) + 
+  icUInt32Number nHeaderSize = sizeof(icUInt32Number) + 
     sizeof(icUInt32Number) + 
     sizeof(icUInt16Number) + 
     sizeof(icUInt16Number);
@@ -370,7 +379,7 @@ bool CIccMpeUnknown::Read(icUInt32Number nSize, CIccIO *pIO)
     if (!SetDataSize(nDataSize, false))
       return false;
 
-    if (pIO->Read8(m_pData, nDataSize)!=(icInt32Number)nDataSize)
+    if (pIO->Read8(m_pData, nDataSize)!= nDataSize)
       return false;
   }
 
@@ -407,7 +416,7 @@ bool CIccMpeUnknown::Write(CIccIO *pIO)
     return false;
 
   if (m_nSize) {
-    if (pIO->Write8(m_pData, m_nSize)!=(icInt32Number)m_nSize)
+    if (pIO->Write8(m_pData, m_nSize)!= m_nSize)
       return false;
   }
 
@@ -424,7 +433,7 @@ bool CIccMpeUnknown::Write(CIccIO *pIO)
  * 
  * Return: 
  ******************************************************************************/
-icValidateStatus CIccMpeUnknown::Validate(std::string sigPath, std::string &sReport, const CIccTagMultiProcessElement* pMPE/*=NULL*/, const CIccProfile *pProfile/*=NULL*/) const
+icValidateStatus CIccMpeUnknown::Validate(std::string sigPath, std::string &sReport, const CIccTagMultiProcessElement* /* pMPE =NULL */, const CIccProfile * /* pProfile =NULL */) const
 {
   CIccInfo Info;
   icChar buf[40];
@@ -433,7 +442,7 @@ icValidateStatus CIccMpeUnknown::Validate(std::string sigPath, std::string &sRep
   sReport += icMsgValidateCriticalError;
   sReport += sSigPathName;
   sReport += " - Contains unknown processing element type (";
-  icGetSig(buf, m_sig, true);
+  icGetSig(buf, 40, m_sig, true);
   sReport += buf;
   sReport += ").\n";
 
@@ -451,7 +460,7 @@ icValidateStatus CIccMpeUnknown::Validate(std::string sigPath, std::string &sRep
  * 
  * Return: 
  ******************************************************************************/
-icValidateStatus CIccMultiProcessElement::Validate(std::string sigPath, std::string &sReport, const CIccTagMultiProcessElement* pMPE/*=NULL*/, const CIccProfile *pProfile/*=NULL*/) const
+icValidateStatus CIccMultiProcessElement::Validate(std::string sigPath, std::string &sReport, const CIccTagMultiProcessElement* /* pMPE =NULL */, const CIccProfile * /* pProfile =NULL */) const
 {
   icValidateStatus rv = icValidateOK;
 
@@ -891,9 +900,10 @@ bool CIccTagMultiProcessElement::IsSupported()
  ******************************************************************************/
 void CIccTagMultiProcessElement::Describe(std::string &sDescription, int nVerboseness)
 {
-  icChar buf[128];
+  const size_t bufSize = 128;
+  icChar buf[bufSize];
 
-  sprintf(buf, "BEGIN MULTI_PROCESS_ELEMENT_TAG %d %d\n", m_nInputChannels, m_nOutputChannels);
+  snprintf(buf, bufSize, "BEGIN MULTI_PROCESS_ELEMENT_TAG %d %d\n", m_nInputChannels, m_nOutputChannels);
   sDescription += buf;
   sDescription += "\n";
 
@@ -901,7 +911,7 @@ void CIccTagMultiProcessElement::Describe(std::string &sDescription, int nVerbos
   int j;
 
   for (j=0, i=m_list->begin(); i!=m_list->end(); j++, i++) {
-    sprintf(buf, "PROCESS_ELEMENT #%d\n", j+1);
+    snprintf(buf, bufSize, "PROCESS_ELEMENT #%d\n", j+1);
     sDescription += buf;
     i->ptr->Describe(sDescription, nVerboseness);
     sDescription += "\n";
@@ -970,11 +980,11 @@ bool CIccTagMultiProcessElement::Read(icUInt32Number size, CIccIO *pIO)
 {
   icTagTypeSignature sig;
   
-  icUInt32Number headerSize = sizeof(icTagTypeSignature) + 
+  icUInt32Number headerSize = sizeof(icUInt32Number) + 
     sizeof(icUInt32Number) + 
-    sizeof(icUInt8Number) + 
-    sizeof(icUInt8Number) + 
-    sizeof(icUInt16Number);
+    sizeof(icUInt16Number) +
+    sizeof(icUInt16Number) +
+    sizeof(icUInt32Number);
 
   if (headerSize > size)
     return false;
@@ -985,7 +995,7 @@ bool CIccTagMultiProcessElement::Read(icUInt32Number size, CIccIO *pIO)
 
   Clean();
 
-  icUInt32Number tagStart = pIO->Tell();
+  size_t tagStart = pIO->Tell();
 
   if (!pIO->Read32(&sig))
     return false;
@@ -1002,15 +1012,13 @@ bool CIccTagMultiProcessElement::Read(icUInt32Number size, CIccIO *pIO)
   if (!pIO->Read32(&m_nProcElements))
     return false;
 
-  if (headerSize + (icUInt64Number)m_nProcElements*sizeof(icUInt32Number) > size)
+  if ( (headerSize + (icUInt64Number)m_nProcElements*sizeof(icPositionNumber)) > size)
     return false;
 
   m_list = new CIccMultiProcessElementList();
 
   if (!m_list)
     return false;
-
-  icUInt32Number i;
 
   m_position = (icPositionNumber*)calloc(m_nProcElements, sizeof(icPositionNumber));
 
@@ -1019,6 +1027,7 @@ bool CIccTagMultiProcessElement::Read(icUInt32Number size, CIccIO *pIO)
 
   CIccLutOffsetMap loadedElements;
 
+  icUInt32Number i;
   for (i=0; i<m_nProcElements; i++) {
     if (!pIO->Read32(&m_position[i].offset))
       return false;
@@ -1037,9 +1046,9 @@ bool CIccTagMultiProcessElement::Read(icUInt32Number size, CIccIO *pIO)
     //Use hash to cache offset duplication
     CIccMultiProcessElement *element = loadedElements[m_position[i].offset];
     if (!element) {
-      icUInt32Number pos = tagStart + m_position[i].offset;
+      int64_t pos = tagStart + m_position[i].offset;
 
-      if (pIO->Seek(pos, icSeekSet)!=(icInt32Number)pos) {
+      if (pIO->Seek(pos, icSeekSet)!= pos) {
         return false;
       }
 
@@ -1047,7 +1056,7 @@ bool CIccTagMultiProcessElement::Read(icUInt32Number size, CIccIO *pIO)
         return false;
       }
       
-      if (pIO->Seek(pos, icSeekSet)!=(icInt32Number)pos) {
+      if (pIO->Seek(pos, icSeekSet)!= pos) {
         return false;
       }
 
@@ -1088,7 +1097,7 @@ bool CIccTagMultiProcessElement::Write(CIccIO *pIO)
   if (!pIO)
     return false;
 
-  icUInt32Number tagStart = pIO->Tell();
+  size_t tagStart = pIO->Tell();
 
   if (!pIO->Write32(&sig))
     return false;
@@ -1113,7 +1122,7 @@ bool CIccTagMultiProcessElement::Write(CIccIO *pIO)
     return false;
 
   if (m_nProcElements) {
-    icUInt32Number offsetPos = pIO->Tell();
+    size_t offsetPos = pIO->Tell();
 
     if (m_position) {
       free(m_position);
@@ -1133,31 +1142,30 @@ bool CIccTagMultiProcessElement::Write(CIccIO *pIO)
 
     CIccLutPtrMap map;
     CIccMultiProcessElementList::iterator i;
-    icUInt32Number start, end;
     icPositionNumber position;
 
     //Write out each process element
     for (j=0, i=m_list->begin(); i!=m_list->end(); i++, j++) {
       if (map.find(i->ptr)==map.end()) {
-        start = pIO->Tell();
+        size_t start = pIO->Tell();
 
         if (!i->ptr->Write(pIO))
           return false;
 
-        end = pIO->Tell();
+        size_t end = pIO->Tell();
 
         if (!pIO->Align32())
           return false;
 
-        position.offset = start - tagStart;
-        position.size = end - start;
+        position.offset = (icUInt32Number)(start - tagStart);
+        position.size = (icUInt32Number)(end - start);
 
         map[i->ptr] = position;
       }
       m_position[j] = map[i->ptr];
     }
 
-    icUInt32Number endPos = pIO->Tell();
+    size_t endPos = pIO->Tell();
 
     if (pIO->Seek(offsetPos, icSeekSet)<0)
       return false;
@@ -1700,17 +1708,17 @@ icValidateStatus CIccTagMultiProcessElement::Validate(std::string sigPath, std::
         switch(icGetFirstSigPathSig(sigPath)) {
           case icSigBrdfTransformMbr:
             //TODO: Initialize input and output
-            nInput = nOutput = 0;
+            //nInput = nOutput = 0;
             break;
 
           case icSigBrdfLightTransformMbr:
             //TODO: Initialize input and output
-            nInput = nOutput = 0;
+            //nInput = nOutput = 0;
             break;
 
           case icSigBrdfOutputTransformMbr:
             //TODO: Initialize input and output
-            nInput = nOutput = 0;
+            //nInput = nOutput = 0;
             break;
 
           default:
@@ -1726,17 +1734,17 @@ icValidateStatus CIccTagMultiProcessElement::Validate(std::string sigPath, std::
         switch(icGetFirstSigPathSig(sigPath)) {
           case icSigBrdfTransformMbr:
             //TODO: Initialize input and output
-            nInput = nOutput = 0;
+            //nInput = nOutput = 0;
             break;
 
           case icSigBrdfLightTransformMbr:
             //TODO: Initialize input and output
-            nInput = nOutput = 0;
+            //nInput = nOutput = 0;
             break;
 
           case icSigBrdfOutputTransformMbr:
             //TODO: Initialize input and output
-            nInput = nOutput = 0;
+            //nInput = nOutput = 0;
             break;
 
           default:
@@ -1889,6 +1897,6 @@ icValidateStatus CIccTagMultiProcessElement::Validate(std::string sigPath, std::
   return rv;
 }
 
-#ifdef USEREFICCMAXNAMESPACE
-} //namespace refIccMAX
+#ifdef USEICCDEVNAMESPACE
+} //namespace iccDEV
 #endif

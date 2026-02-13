@@ -6,15 +6,11 @@ and supporting classes
 
 Version:    V1
 
-Copyright:  (c) see ICC Software License
+Copyright:  (c) see Software License
 */
 
 /*
-* The ICC Software License, Version 0.2
-*
-*
-* Copyright (c) 2003-2012 The International Color Consortium. All rights 
-* reserved.
+* Copyright (c) International Color Consortium.
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions
@@ -79,8 +75,8 @@ Copyright:  (c) see ICC Software License
 #include <memory>
 #include <list>
 
-#ifdef USEREFICCMAXNAMESPACE
-namespace refIccMAX {
+#ifdef USEICCDEVNAMESPACE
+namespace iccDEV {
 #endif
 
 class CIccTagStruct;
@@ -132,7 +128,7 @@ public:
   virtual ~IIccArray() {}
   virtual IIccArray* NewCopy(CIccTagArray *pNewTagArray) const = 0;
 
-  virtual void Describe(std::string &sDescription, int nVerboseness) const { }
+  virtual void Describe(std::string & /*sDescription*/, int /*nVerboseness*/) const { }
 
   virtual const icChar *GetClassName() const = 0;
 
@@ -279,7 +275,7 @@ ICCPROFLIB_API IIccArray* icGetTagArrayHandler(CIccTag* pTag);
 ICCPROFLIB_API IIccArray* icGetTagArrayHandlerOfType(CIccTag* pTag, icStructSignature sig);
 
 
-#ifdef USEREFICCMAXNAMESPACE
+#ifdef USEICCDEVNAMESPACE
 }
 #endif
 

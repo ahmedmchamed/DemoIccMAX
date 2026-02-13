@@ -72,10 +72,10 @@
 #pragma warning( disable: 4786) //disable warning in <list.h>
 #endif
 
-#include <stdio.h>
-#include <math.h>
-#include <string.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cmath>
+#include <cstring>
+#include <cstdlib>
 #include "IccTagProfSeqId.h"
 #include "IccUtil.h"
 #include "IccIO.h"
@@ -233,11 +233,12 @@ void CIccProfileIdDesc::Describe(std::string &sDescription, int nVerboseness)
   sDescription += "ProfileID:\n";
 
   size_t i;
-  char buf[20];
+  const size_t bufSize = 20;
+  char buf[bufSize];
   for (i=0; i<sizeof(icProfileID); i++) {
     if (i && i%4==0)
       sDescription += " ";
-    sprintf(buf, "%02x", m_profileID.ID8[i]);
+    snprintf(buf, bufSize, "%02x", m_profileID.ID8[i]);
     sDescription += buf;
   }
   sDescription += "\n";
@@ -428,21 +429,22 @@ CIccTagProfileSequenceId* CIccTagProfileSequenceId::ParseMem(icUInt8Number *pMem
  ******************************************************************************/
 void CIccTagProfileSequenceId::Describe(std::string &sDescription, int nVerboseness)
 {
-  icChar buf[128];
+  const size_t bufSize = 128;
+  icChar buf[bufSize];
 
-  sprintf(buf, "BEGIN ProfileSequenceIdentification_TAG\n");
+  snprintf(buf, bufSize, "BEGIN ProfileSequenceIdentification_TAG\n");
   sDescription += buf;
   sDescription += "\n";
 
   int i;
   CIccProfileIdDescList::iterator j;
   for (i=0, j=m_list->begin(); j!=m_list->end(); i++, j++) {
-    sprintf(buf, "ProfileDescription_%d:\n", i+1);
+    snprintf(buf, bufSize, "ProfileDescription_%d:\n", i+1);
     sDescription += buf;
     j->Describe(sDescription, nVerboseness);
   }
 
-  sprintf(buf, "END ProfileSequenceIdentification_TAG\n");
+  snprintf(buf, bufSize, "END ProfileSequenceIdentification_TAG\n");
   sDescription += buf;
   sDescription += "\n";
 }
@@ -474,7 +476,7 @@ bool CIccTagProfileSequenceId::Read(icUInt32Number size, CIccIO *pIO)
   m_list->clear();
 
   icUInt32Number sig;
-  icUInt32Number tagStart = pIO->Tell();
+  size_t tagStart = pIO->Tell();
 
   if (!pIO->Read32(&sig))
     return false;
@@ -546,7 +548,7 @@ bool CIccTagProfileSequenceId::Write(CIccIO *pIO)
   if (!pIO)
     return false;
 
-  icUInt32Number tagStart = pIO->Tell();
+  size_t tagStart = pIO->Tell();
 
   if (!pIO->Write32(&sig))
     return false;
@@ -562,7 +564,7 @@ bool CIccTagProfileSequenceId::Write(CIccIO *pIO)
   if (!pos)
     return false;
 
-  icUInt32Number dirpos = pIO->Tell();
+  size_t dirpos = pIO->Tell();
 
   //Write Unintialized TagDir
   for (i=0; i<count; i++) {
@@ -576,16 +578,16 @@ bool CIccTagProfileSequenceId::Write(CIccIO *pIO)
 
   //Write Tags
   for (i=0, j=m_list->begin(); j!= m_list->end(); i++, j++) {
-    pos[i].offset = pIO->Tell();
+    pos[i].offset = (icUInt32Number)pIO->Tell();
 
     j->Write(pIO);
-    pos[i].size = pIO->Tell() - pos[i].offset;
+    pos[i].size = (icUInt32Number)(pIO->Tell() - pos[i].offset);
     pos[i].offset -= tagStart;
 
     pIO->Align32();
   }
 
-  icUInt32Number endpos = pIO->Tell();
+  size_t endpos = pIO->Tell();
 
   pIO->Seek(dirpos, icSeekSet);
 

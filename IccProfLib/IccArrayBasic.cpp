@@ -72,10 +72,10 @@
   #pragma warning( disable: 4786) //disable warning in <list.h>
   #include <windows.h>
 #endif
-#include <stdio.h>
-#include <math.h>
-#include <string.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cmath>
+#include <cstring>
+#include <cstdlib>
 #include "IccArrayBasic.h"
 #include "IccStructBasic.h"
 #include "IccUtil.h"
@@ -87,8 +87,8 @@ using std::min;
 #define __min min
 #endif
 
-#ifdef USEREFICCMAXNAMESPACE
-namespace refIccMAX {
+#ifdef USEICCDEVNAMESPACE
+namespace iccDEV {
 #endif
 
 
@@ -113,7 +113,7 @@ IIccArray* CIccArrayUnknown::NewCopy(CIccTagArray *pTagArray) const
 }
 
 
-void CIccArrayUnknown::Describe(std::string &sDescription, int nVerboseness) const
+void CIccArrayUnknown::Describe(std::string &sDescription, int /* nVerboseness */) const
 {
     sDescription += "\nCIccArrayUnknown::Describe()\n";
 }
@@ -131,8 +131,9 @@ icValidateStatus CIccArrayUnknown::Validate(std::string sigPath, std::string &sR
       CIccTag *pTag = m_pTag->GetIndex(i);
       if (!pTag) {
         rv = icMaxStatus(rv, icValidateWarning);
-        char buf[80];
-        sprintf(buf, "Tag at index %d is NULL\n", i);
+        const size_t bufSize = 80;
+        char buf[bufSize];
+        snprintf(buf, bufSize, "Tag at index %d is NULL\n", i);
         sReport += buf;
       }
       else {
@@ -171,7 +172,7 @@ IIccArray* CIccArrayColorantInfo::NewCopy(CIccTagArray *pTagArray) const
 }
 
 
-void CIccArrayColorantInfo::Describe(std::string &sDescription, int nVerboseness) const
+void CIccArrayColorantInfo::Describe(std::string &sDescription, int /* nVerboseness */) const
 {
     sDescription += "\nCIccArrayColorantInfo::Describe()\n";
 }
@@ -188,15 +189,17 @@ icValidateStatus CIccArrayColorantInfo::Validate(std::string sigPath, std::strin
       CIccTag *pTag = m_pTag->GetIndex(i);
       if (!pTag) {
         rv = icMaxStatus(rv, icValidateWarning);
-        char buf[80];
-        sprintf(buf, "Tag at index %d is NULL\n", i);
+        const size_t bufSize = 80;
+        char buf[bufSize];
+        snprintf(buf, bufSize, "Tag at index %d is NULL\n", i);
         sReport += buf;
       }
       else {
         if (pTag->GetTagStructType() != icSigColorantInfoStruct) {
           rv = icMaxStatus(rv, icValidateCriticalError);
-          char buf[80]; 
-          sprintf(buf, "Tag at index %d is not a colorantInfoStruct\n", i);
+            const size_t bufSize = 80;
+            char buf[bufSize];
+          snprintf(buf, bufSize, "Tag at index %d is not a colorantInfoStruct\n", i);
           sReport += buf;
         }
         rv = icMaxStatus(rv, pTag->Validate(sigPath + icGetSigPath(pTag->GetType()), sReport, pProfile));
@@ -252,14 +255,14 @@ IIccArray* CIccArrayNamedColor::NewCopy(CIccTagArray *pTagArray) const
 }
 
 
-void CIccArrayNamedColor::Describe(std::string &sDescription, int nVerboseness) const
+void CIccArrayNamedColor::Describe(std::string &sDescription, int /* nVerboseness */) const
 {
     sDescription += "\nCIccArrayNamedColor::Describe()\n";
 }
 
 
 void CIccArrayNamedColor::SetColorSpaces(icColorSpaceSignature csPcs, icColorSpaceSignature csDevice, 
-                                         icSpectralColorSignature csSpectralPcs/* =icSigNoSpectralData */,
+                                         icColorSpaceSignature csSpectralPcs/* =icSigNoSpectralData */,
                                          const icSpectralRange *pSpectralRange /* = NULL */,
                                          const icSpectralRange *pBiSpectralRange /* = NULL */)
 {
@@ -319,22 +322,23 @@ CIccStructNamedColor* CIccArrayNamedColor::FindDeviceColor(const icFloatNumber *
   if (!temp)
     return NULL;
 
-  icUInt32Number i, j, n=m_pTag->GetSize();
-  for (i=1; i<n; i++) {
+  icUInt32Number j;
+  icUInt32Number tagSize = m_pTag->GetSize();
+  for (icUInt32Number i=1; i<tagSize; i++) {
     CIccStructNamedColor *pNamedColor = (CIccStructNamedColor*)icGetTagStructHandlerOfType(m_pTag->GetIndex(i), icSigNamedColorStruct);
     if (pNamedColor) {
       CIccTag *pTag = pNamedColor->GetElem(icSigNmclDeviceDataMbr);
       if (pTag && pTag->IsNumArrayType()) {
         CIccTagNumArray *v = (CIccTagNumArray*)pTag;
-        icUInt32Number n = v->GetNumValues()/m_nDeviceSamples;
-        if (n) {
-          v->GetValues(temp, (n-1)*m_nDeviceSamples, m_nDeviceSamples);
+        icUInt32Number sampleCount = v->GetNumValues()/m_nDeviceSamples;
+        if (sampleCount) {
+          v->GetValues(temp, (sampleCount-1)*m_nDeviceSamples, m_nDeviceSamples);
 
           for (j=0; j<m_nDeviceSamples; j++) {
             if (temp[j]!=pDevColor[j])
               break;
           }
-          if (n==m_nDeviceSamples) {
+          if (sampleCount==m_nDeviceSamples) {
             delete [] temp;
             return pNamedColor;
           }
@@ -359,16 +363,16 @@ CIccStructNamedColor* CIccArrayNamedColor::FindPcsColor(const icFloatNumber *pPC
     memcpy(pLabIn, pPCS, 3*sizeof(icFloatNumber));
   }
 
-  icUInt32Number i, n=m_pTag->GetSize();
-  for (i=1; i<n; i++) {
+  icUInt32Number tagSize = m_pTag->GetSize();
+  for (icUInt32Number i=1; i<tagSize; i++) {
     CIccStructNamedColor *pNamedColor = (CIccStructNamedColor*)icGetTagStructHandlerOfType(m_pTag->GetIndex(i), icSigNamedColorStruct);
     if (pNamedColor) {
       CIccTag *pTag = pNamedColor->GetElem(icSigNmclDeviceDataMbr);
       if (pTag && pTag->IsNumArrayType()) {
         CIccTagNumArray *v = (CIccTagNumArray*)pTag;
-        icUInt32Number n = v->GetNumValues()/m_nDeviceSamples;
-        if (n) {
-          v->GetValues(pLab, (n-1)*m_nDeviceSamples, 3);
+        icUInt32Number sampleCount = v->GetNumValues()/m_nDeviceSamples;
+        if (sampleCount) {
+          v->GetValues(pLab, (sampleCount-1)*m_nDeviceSamples, 3);
 
           dCalcDE = icDeltaE(pLabIn, pLab);
 
@@ -394,16 +398,16 @@ CIccStructNamedColor* CIccArrayNamedColor::FindSpectralColor(const icFloatNumber
   if (!temp)
     return NULL;
 
-  icUInt32Number i, n=m_pTag->GetSize();
-  for (i=1; i<n; i++) {
+  icUInt32Number tagSize = m_pTag->GetSize();
+  for (icUInt32Number i=1; i<tagSize; i++) {
     CIccStructNamedColor *pNamedColor = (CIccStructNamedColor*)icGetTagStructHandlerOfType(m_pTag->GetIndex(i), icSigNamedColorStruct);
     if (pNamedColor) {
       CIccTag *pTag = pNamedColor->GetElem(icSigNmclDeviceDataMbr);
       if (pTag && pTag->IsNumArrayType()) {
         CIccTagNumArray *v = (CIccTagNumArray*)pTag;
-        icUInt32Number n = v->GetNumValues()/m_nDeviceSamples;
-        if (n) {
-          v->GetValues(temp, (n-1)*m_nSpectralSamples, m_nSpectralSamples);
+        icUInt32Number sampleCount = v->GetNumValues()/m_nDeviceSamples;
+        if (sampleCount) {
+          v->GetValues(temp, (sampleCount-1)*m_nSpectralSamples, m_nSpectralSamples);
 
           dCalcRMS = icRmsDif(pSpec, temp, m_nSpectralSamples);
 
@@ -504,26 +508,27 @@ icValidateStatus CIccArrayNamedColor::Validate(std::string sigPath, std::string 
 
          if (pColor) {
            CIccTagNumArray *pArray, *pTint;
-           char str[256];
+           const size_t strSize = 256;
+           char str[strSize];
 
            pTint = pColor->GetNumArray(icSigNmclTintMbr);
 
            pArray = pColor->GetNumArray(icSigNmclDeviceDataMbr);
            if (pArray && m_nDeviceSamples) {
-             icUInt32Number n = pArray->GetNumValues()/m_nDeviceSamples;
+             icUInt32Number sampleCount = pArray->GetNumValues()/m_nDeviceSamples;
 
-             if (n<1) {
-               sprintf(str, "Insufficient device samples in NamedColor[%d]\n", i);
+             if (sampleCount<1) {
+               snprintf(str, strSize, "Insufficient device samples in NamedColor[%d]\n", i);
                sReport += str;
                rv = icMaxStatus(rv, icValidateCriticalError);
              }
-             else if (pArray->GetNumValues() != n*m_nDeviceSamples) {
-               sprintf(str, "Number of Device samples isn't an even multiple of Device samples in NamedColor[%d]!\n", i);
+             else if (pArray->GetNumValues() != sampleCount*m_nDeviceSamples) {
+               snprintf(str, strSize, "Number of Device samples isn't an even multiple of Device samples in NamedColor[%d]!\n", i);
                sReport += str;
                rv = icMaxStatus(rv, icValidateCriticalError);
              }
              if (pTint && pTint->GetNumValues()!=n) {
-               sprintf(str, "Number of device samples doesn't match tint values in NamedColor[%d]\n", i);
+               snprintf(str, strSize, "Number of device samples doesn't match tint values in NamedColor[%d]\n", i);
                sReport += str;
                rv = icMaxStatus(rv, icValidateCriticalError);
              }
@@ -531,20 +536,20 @@ icValidateStatus CIccArrayNamedColor::Validate(std::string sigPath, std::string 
 
            pArray = pColor->GetNumArray(icSigNmclPcsDataMbr);
            if (pArray && m_nPcsSamples) {
-             icUInt32Number n = pArray->GetNumValues()/m_nPcsSamples;
+             icUInt32Number sampleCount = pArray->GetNumValues()/m_nPcsSamples;
 
-             if (n<1) {
-               sprintf(str, "Insufficient PCS samples in NamedColor[%d]\n", i);
+             if (sampleCount<1) {
+               snprintf(str, strSize, "Insufficient PCS samples in NamedColor[%d]\n", i);
                sReport += str;
                rv = icMaxStatus(rv, icValidateCriticalError);
              }
-             else if (pArray->GetNumValues() != n*m_nPcsSamples) {
-               sprintf(str, "Number of PCS samples isn't an even multiple of PCS samples in NamedColor[%d]!\n", i);
+             else if (pArray->GetNumValues() != sampleCount*m_nPcsSamples) {
+               snprintf(str, strSize, "Number of PCS samples isn't an even multiple of PCS samples in NamedColor[%d]!\n", i);
                sReport += str;
                rv = icMaxStatus(rv, icValidateCriticalError);
              }
              if (pTint && pTint->GetNumValues()!=n) {
-               sprintf(str, "Number of PCS samples doesn't match tint values in NamedColor[%d]\n", i);
+               snprintf(str, strSize, "Number of PCS samples doesn't match tint values in NamedColor[%d]\n", i);
                sReport += str;
                rv = icMaxStatus(rv, icValidateCriticalError);
              }
@@ -556,26 +561,26 @@ icValidateStatus CIccArrayNamedColor::Validate(std::string sigPath, std::string 
                CIccTagSparseMatrixArray *pArrayTag = (CIccTagSparseMatrixArray *) pArray;
 
                if (pArrayTag->GetChannelsPerMatrix()!= m_nSpectralSamples) {
-                 sprintf(str, "Incompatible SpectralPcs samples in NamedColor[%d]\n", i);
+                 snprintf(str, strSize, "Incompatible SpectralPcs samples in NamedColor[%d]\n", i);
                  sReport += str;
                  rv = icMaxStatus(rv, icValidateCriticalError);
                }
              }
              else if (m_nSpectralSamples) {
-               icUInt32Number n = pArray->GetNumValues()/m_nSpectralSamples;
+               icUInt32Number sampleCount = pArray->GetNumValues()/m_nSpectralSamples;
 
-               if (n<1) {
-                 sprintf(str, "Insufficient SpectralPcs samples in NamedColor[%d]\n", i);
+               if (sampleCount<1) {
+                 snprintf(str, strSize, "Insufficient SpectralPcs samples in NamedColor[%d]\n", i);
                  sReport += str;
                  rv = icMaxStatus(rv, icValidateCriticalError);
                }
-               else if (pArray->GetNumValues() != n*m_nSpectralSamples) {
-                 sprintf(str, "Number of spectral samples isn't an even multiple of spectral PCS samples in Namedcolor[%d]!\n", i);
+               else if (pArray->GetNumValues() != sampleCount*m_nSpectralSamples) {
+                 snprintf(str, strSize, "Number of spectral samples isn't an even multiple of spectral PCS samples in Namedcolor[%d]!\n", i);
                  sReport += str;
                  rv = icMaxStatus(rv, icValidateCriticalError);
                }
                if (pTint && pTint->GetNumValues()!=n) {
-                 sprintf(str, "Number of SpectralPCS samples doesn't match tint values in NamedColor[%d]\n", i);
+                 snprintf(str, strSize, "Number of SpectralPCS samples doesn't match tint values in NamedColor[%d]\n", i);
                  sReport += str;
                  rv = icMaxStatus(rv, icValidateCriticalError);
                }
@@ -600,6 +605,6 @@ icValidateStatus CIccArrayNamedColor::Validate(std::string sigPath, std::string 
 }
 
 
-#ifdef USEREFICCMAXNAMESPACE
-} //namespace refIccMAX
+#ifdef USEICCDEVNAMESPACE
+} //namespace iccDEV
 #endif

@@ -5,15 +5,11 @@
 
     Version:    V1
 
-    Copyright:  (c) see ICC Software License
+    Copyright:  (c) see Software License
 */
 
 /*
- * The ICC Software License, Version 0.2
- *
- *
- * Copyright (c) 2003-2012 The International Color Consortium. All rights 
- * reserved.
+ * Copyright (c) International Color Consortium.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -73,9 +69,10 @@
 
 #include "IccDefs.h"
 #include "stdio.h"
+#include <stdint.h>
 
-#ifdef USEREFICCMAXNAMESPACE
-namespace refIccMAX {
+#ifdef USEICCDEVNAMESPACE
+namespace iccDEV {
 #endif
 
 ///Seek types
@@ -101,42 +98,43 @@ public:
 
   virtual void Close() {}
 
-  virtual icInt32Number Read8(void *pBuf8, icInt32Number nNum=1) { return 0; }
-  virtual icInt32Number Write8(void *pBuf8, icInt32Number nNum=1) { return 0; }
+// the unused param is needed to define default value for overrides, changing would require a lot of additional changes
+  virtual size_t Read8(void * /*pBuf8*/, size_t nNum=1) { (void)nNum; return 0; }
+  virtual size_t Write8(void * /*pBuf8*/, size_t nNum=1) { (void)nNum; return 0; }
 
-  icInt32Number ReadLine(void *pBuf8, icInt32Number nNum=256);
+  size_t ReadLine(void *pBuf8, size_t nNum=256);
 
-  icInt32Number Read16(void *pBuf16, icInt32Number nNum=1);
-  icInt32Number Write16(void *pBuf16, icInt32Number nNum=1);
+  size_t Read16(void *pBuf16, size_t nNum=1);
+  size_t Write16(void *pBuf16, size_t nNum=1);
 
-  icInt32Number Read32(void *pBuf32, icInt32Number nNum=1);
-  icInt32Number Write32(void *pBuf32, icInt32Number nNum=1);
+  size_t Read32(void *pBuf32, size_t nNum=1);
+  size_t Write32(void *pBuf32, size_t nNum=1);
 
-  icInt32Number Read64(void *pBuf64, icInt32Number nNum=1);
-  icInt32Number Write64(void *pBuf64, icInt32Number nNum=1);
+  size_t Read64(void *pBuf64, size_t nNum=1);
+  size_t Write64(void *pBuf64, size_t nNum=1);
 
-  icInt32Number ReadUInt8Float(void *pBufFloat, icInt32Number nNum=1);
-  icInt32Number WriteUInt8Float(void *pBuf16, icInt32Number nNum=1);
+  size_t ReadUInt8Float(void *pBufFloat, size_t nNum=1);
+  size_t WriteUInt8Float(void *pBuf16, size_t nNum=1);
 
-  icInt32Number ReadUInt16Float(void *pBufFloat, icInt32Number nNum=1);
-  icInt32Number WriteUInt16Float(void *pBuf16, icInt32Number nNum=1);
+  size_t ReadUInt16Float(void *pBufFloat, size_t nNum=1);
+  size_t WriteUInt16Float(void *pBuf16, size_t nNum=1);
 
-  icInt32Number ReadFloat16Float(void *pBufFloat, icInt32Number nNum=1);
-  icInt32Number WriteFloat16Float(void *pBuf16, icInt32Number nNum=1);
+  size_t ReadFloat16Float(void *pBufFloat, size_t nNum=1);
+  size_t WriteFloat16Float(void *pBuf16, size_t nNum=1);
 
-  icInt32Number ReadFloat32Float(void *pBufFloat, icInt32Number nNum=1);
-  icInt32Number WriteFloat32Float(void *pBufFloat, icInt32Number nNum=1);
+  size_t ReadFloat32Float(void *pBufFloat, size_t nNum=1);
+  size_t WriteFloat32Float(void *pBufFloat, size_t nNum=1);
 
-  virtual icInt32Number GetLength() {return 0;}
+  virtual size_t GetLength() {return 0;}
 
-  virtual icInt32Number Seek(icInt32Number nOffset, icSeekVal pos) {return -1;}
-  virtual icInt32Number Tell() {return 0;}
+  virtual int64_t Seek(int64_t /*nOffset*/, icSeekVal /*pos*/) {return -1;}
+  virtual int64_t Tell() {return 0;}
 
   ///Write operation to make sure that filelength is evenly divisible by 4
   bool Align32(); 
 
   ///Operation to make sure read position is evenly divisible by 4
-  bool Sync32(icUInt32Number nOffset=0); 
+  bool Sync32(size_t nOffset=0); 
 };
 
 /**
@@ -162,13 +160,13 @@ public:
 
   virtual void Close();
 
-  virtual icInt32Number Read8(void *pBuf, icInt32Number nNum=1);
-  virtual icInt32Number Write8(void *pBuf, icInt32Number nNum=1);
+  virtual size_t Read8(void *pBuf, size_t nNum=1);
+  virtual size_t Write8(void *pBuf, size_t nNum=1);
 
-  virtual icInt32Number GetLength();
+  virtual size_t GetLength();
 
-  virtual icInt32Number Seek(icInt32Number nOffset, icSeekVal pos);
-  virtual icInt32Number Tell();
+  virtual int64_t Seek(int64_t nOffset, icSeekVal pos);
+  virtual int64_t Tell();
 
 protected:
   FILE *m_fFile;
@@ -187,21 +185,21 @@ public:
   CIccEmbedIO();
   virtual ~CIccEmbedIO();
 
-  bool Attach(CIccIO *pIO, icInt32Number nSize=0, bool bOwnIO=false);
+  bool Attach(CIccIO *pIO, size_t nSize=0, bool bOwnIO=false);
   virtual void Close();
 
-  virtual icInt32Number Read8(void *pBuf, icInt32Number nNum = 1);
-  virtual icInt32Number Write8(void *pBuf, icInt32Number nNum = 1);
+  virtual size_t Read8(void *pBuf, size_t nNum = 1);
+  virtual size_t Write8(void *pBuf, size_t nNum = 1);
 
-  virtual icInt32Number GetLength();
+  virtual size_t GetLength();
 
-  virtual icInt32Number Seek(icInt32Number nOffset, icSeekVal pos);
-  virtual icInt32Number Tell();
+  virtual int64_t Seek(int64_t nOffset, icSeekVal pos);
+  virtual int64_t Tell();
 
 protected:
  CIccIO *m_pIO;
- icInt32Number m_nStartPos;
- icInt32Number m_nSize;
+ int64_t m_nStartPos;
+ size_t m_nSize;
  bool m_bOwnIO;
 };
 
@@ -219,26 +217,26 @@ public:
   CIccMemIO();
   virtual ~CIccMemIO();
 
-  bool Alloc(icUInt32Number nSize, bool bWrite = false);
+  bool Alloc(size_t nSize, bool bWrite = false);
 
-  bool Attach(icUInt8Number *pData, icUInt32Number nSize, bool bWrite=false);
+  bool Attach(icUInt8Number *pData, size_t nSize, bool bWrite=false);
   virtual void Close();
 
-  virtual icInt32Number Read8(void *pBuf, icInt32Number nNum=1);
-  virtual icInt32Number Write8(void *pBuf, icInt32Number nNum=1);
+  virtual size_t Read8(void *pBuf, size_t nNum=1);
+  virtual size_t Write8(void *pBuf, size_t nNum=1);
 
-  virtual icInt32Number GetLength();
+  virtual size_t GetLength();
 
-  virtual icInt32Number Seek(icInt32Number nOffset, icSeekVal pos);
-  virtual icInt32Number Tell();
+  virtual int64_t Seek(int64_t nOffset, icSeekVal pos);
+  virtual int64_t Tell();
 
   icUInt8Number *GetData() { return m_pData; }
 
 protected:
   icUInt8Number *m_pData;
-  icUInt32Number m_nSize;
-  icUInt32Number m_nAvail;
-  icUInt32Number m_nPos;
+  size_t m_nSize;
+  size_t m_nAvail;
+  size_t m_nPos;
 
   bool m_bFreeData;
 };
@@ -261,22 +259,22 @@ public:
   virtual void Close();
 
 
-  virtual icInt32Number Read8(void *pBuf, icInt32Number nNum=1);   //Read zero's into buf
-  virtual icInt32Number Write8(void *pBuf, icInt32Number nNum=1);
+  virtual size_t Read8(void *pBuf, size_t nNum=1);   //Read zero's into buf
+  virtual size_t Write8(void *pBuf, size_t nNum=1);
 
-  virtual icInt32Number GetLength();
+  virtual size_t GetLength();
 
-  virtual icInt32Number Seek(icInt32Number nOffset, icSeekVal pos);
-  virtual icInt32Number Tell();
+  virtual int64_t Seek(int64_t nOffset, icSeekVal pos);
+  virtual int64_t Tell();
 
 protected:
-  icUInt32Number m_nSize;
-  icUInt32Number m_nPos;
+  size_t m_nSize;
+  size_t m_nPos;
 };
 
 
-#ifdef USEREFICCMAXNAMESPACE
-} //namespace refIccMAX
+#ifdef USEICCDEVNAMESPACE
+} //namespace iccDEV
 #endif
 
 #endif // !defined(_ICCIO_H)

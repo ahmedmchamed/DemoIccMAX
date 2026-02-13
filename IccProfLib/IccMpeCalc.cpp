@@ -72,14 +72,15 @@
 #pragma warning( disable: 4786) //disable warning in <list.h>
 #endif
 
-#include <stdio.h>
-#include <math.h>
-#include <string.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cmath>
+#include <cstring>
+#include <cstdlib>
 #include "IccMpeBasic.h"
 #include "IccMpeCalc.h"
 #include "IccIO.h"
 #include <map>
+#include <limits>
 #include "IccUtil.h"
 
 //#define ICC_VERBOSE_CALC_APPLY 1
@@ -102,7 +103,7 @@ public:
     fflush(stdout);
   }
 
-  virtual bool BeforeOp(SIccCalcOp *op, SIccOpState &os, SIccCalcOp *ops)
+  virtual bool BeforeOp(SIccCalcOp *op, SIccOpState &os, SIccCalcOp * /* ops */)
   {
     if (op->sig == icSigIfOp || op->sig == icSigSelectOp) {
       printf("Start:");
@@ -116,7 +117,7 @@ public:
     return false;
   }
 
-  virtual bool AfterOp(SIccCalcOp *op, SIccOpState &os, SIccCalcOp *ops)
+  virtual bool AfterOp(SIccCalcOp *op, SIccOpState &os, SIccCalcOp * /* ops */)
   {
     if (op->sig == icSigDataOp) {
       printf("%9s\t", "data");
@@ -162,6 +163,9 @@ void IIccCalcDebugger::SetDebugger(IIccCalcDebugger *pDebugger)
     g_pDebugger = pDebugger;
 }
 
+// TODO - get rid of these macros and inline the code to reduce errors
+// shadowed variable names are way too risky
+// templates may be an option
 #define OsPopArg(X) { \
   if (!os.pStack->size()) \
     return false; \
@@ -170,48 +174,47 @@ void IIccCalcDebugger::SetDebugger(IIccCalcDebugger *pDebugger)
 }
 
 #define OsPopArgs(X, N) { \
-  icUInt32Number nv=(N); \
-  size_t ss = os.pStack->size(); \
-  if (nv>ss) \
+  icUInt32Number _nv=(N); \
+  size_t _ss = os.pStack->size(); \
+  if (_nv>_ss) \
     return false; \
-  icFloatNumber *sv = &(*os.pStack)[ss-nv]; \
-  memcpy((X), sv, nv*sizeof(icFloatNumber)); \
-  os.pStack->resize(ss-nv); \
+  icFloatNumber *_sv = &(*os.pStack)[_ss-_nv]; \
+  memcpy((X), _sv, _nv*sizeof(icFloatNumber)); \
+  os.pStack->resize(_ss-_nv); \
 }
 
-
 #define OsPushArg(X) { \
-  icFloatNumber V = (X); \
-  os.pStack->push_back(V); \
+  icFloatNumber _V = (X); \
+  os.pStack->push_back(_V); \
 }
 
 #define OsPushArgs(X, N) { \
-  size_t ss = os.pStack->size(); \
-  icUInt32Number nv=(N); \
-  os.pStack->resize(ss+nv); \
-  icFloatNumber *sv = &(*os.pStack)[ss]; \
-  memcpy(sv, (X), nv*sizeof(icFloatNumber)); \
+  size_t _ss = os.pStack->size(); \
+  icUInt32Number _nv=(N); \
+  os.pStack->resize(_ss+_nv); \
+  icFloatNumber *_sv = &(*os.pStack)[_ss]; \
+  memcpy(_sv, (X), _nv*sizeof(icFloatNumber)); \
 }
 
 #define OsShrinkArgs(N) { \
   icUInt32Number nv = (N); \
-  size_t ss = os.pStack->size(); \
-  if (nv>ss) \
+  size_t _ss = os.pStack->size(); \
+  if (nv>_ss) \
     return false; \
-  os.pStack->resize(ss-nv); \
+  os.pStack->resize(_ss-nv); \
 }
 
 #define OsExtendArgs(N) { \
-  size_t ss = os.pStack->size(); \
-  os.pStack->resize(ss+(N)); \
+  size_t _ss = os.pStack->size(); \
+  os.pStack->resize(_ss+(N)); \
 }
 
 
 class CIccOpDefInvalid : public IIccOpDef
 {
 public:
-  virtual bool IsValid(CIccMpeCalculator *pCalc, SIccCalcOp &op) { return false; }
-  virtual bool Exec(SIccCalcOp *op, SIccOpState &os)
+  virtual bool IsValid(CIccMpeCalculator * /* pCalc */, SIccCalcOp & /* op */) { return false; }
+  virtual bool Exec(SIccCalcOp *op, SIccOpState & /* os */)
   {
     if (g_pDebugger)
     {
@@ -257,7 +260,7 @@ public:
   virtual bool Exec(SIccCalcOp *op, SIccOpState &os)
   {
     size_t ss = os.pStack->size();
-    if ((size_t)(op->data.select.v1+1)>ss)
+    if (((size_t)op->data.select.v1+1)>ss)
       return false;
     os.pStack->resize(ss-(op->data.select.v1+1));
     return true;
@@ -373,7 +376,7 @@ public:
 
     pElemApply->Apply(d, s);
 
-    int ns = (int)ss + (int)nDst - (int)nSrc;
+    size_t ns = (size_t)( ss + (int)nDst - (int)nSrc );
 
     if (ns != ss)
       os.pStack->resize(ns);
@@ -389,17 +392,17 @@ class CIccOpDefCopy : public IIccOpDef
 public:
   virtual bool Exec(SIccCalcOp *op, SIccOpState &os)
   {
-    size_t ss = os.pStack->size();
+    size_t stackSize = os.pStack->size();
     int j;
     int n=op->data.select.v1+1;
     int t=op->data.select.v2+1;
-    if (n>(int)ss)
+    if (n>(int)stackSize)
       return false;
 
     if (n && t) {
       OsExtendArgs(n*t);
 
-      icFloatNumber *to = &(*os.pStack)[ss];
+      icFloatNumber *to = &(*os.pStack)[stackSize];
       icFloatNumber *from = to-n;
 
       for (j=0; j<t; j++) {
@@ -416,16 +419,16 @@ class CIccOpDefPositionDup : public IIccOpDef
 public:
   virtual bool Exec(SIccCalcOp *op, SIccOpState &os)
   {
-    size_t ss = os.pStack->size();
+    size_t stackSize = os.pStack->size();
     int j, n=op->data.select.v1+1;
     int t=op->data.select.v2+1;
-    if (n>(int)ss)
+    if (n>(int)stackSize)
       return false;
 
     if (n && t) {
       OsExtendArgs(t);
 
-      icFloatNumber *to = &(*os.pStack)[ss];
+      icFloatNumber *to = &(*os.pStack)[stackSize];
       icFloatNumber *from = to-n;
 
       for (j=0; j<t; j++) {
@@ -593,7 +596,7 @@ public:
 class CIccOpDefPi : public IIccOpDef
 {
 public:
-  virtual bool Exec(SIccCalcOp *op, SIccOpState &os)
+  virtual bool Exec(SIccCalcOp * /* op */, SIccOpState &os)
   {
     OsPushArg((icFloatNumber)icPiNum);
     return true;
@@ -603,7 +606,7 @@ public:
 class CIccOpDefPosInfinity : public IIccOpDef
 {
 public:
-  virtual bool Exec(SIccCalcOp *op, SIccOpState &os)
+  virtual bool Exec(SIccCalcOp * /* op */, SIccOpState &os)
   {
     OsPushArg((icFloatNumber)icPosInfinity);
     return true;
@@ -613,7 +616,7 @@ public:
 class CIccOpDefNegInfinity : public IIccOpDef
 {
 public:
-  virtual bool Exec(SIccCalcOp *op, SIccOpState &os)
+  virtual bool Exec(SIccCalcOp * /* op */, SIccOpState &os)
   {
     OsPushArg((icFloatNumber)icNegInfinity);
     return true;
@@ -623,7 +626,7 @@ public:
 class CIccOpDefNotANumber : public IIccOpDef
 {
 public:
-  virtual bool Exec(SIccCalcOp *op, SIccOpState &os)
+  virtual bool Exec(SIccCalcOp * /* op */, SIccOpState &os)
   {
     OsPushArg((icFloatNumber)icNotANumber);
     return true;
@@ -933,6 +936,7 @@ class CIccOpDefModulus : public IIccOpDef
 public:
   virtual bool Exec(SIccCalcOp *op, SIccOpState &os)
   {
+    const icFloatNumber epsilon = 1e-12;        // value chosen somewhat arbitrarily to allow division to work and not overflow
     int j, n = op->data.select.v1+1;
     int tn = n*2;
     size_t ss = os.pStack->size();
@@ -940,7 +944,13 @@ public:
       return false;
     icFloatNumber *s = &(*os.pStack)[ss-tn];
     for (j=0; j<n; j++) {
-      s[j] = s[j] - (icFloatNumber)((int)(s[j] / s[j+n]))*s[j+n];
+      icFloatNumber temp = s[j];
+      icFloatNumber tempN = s[j+n];
+      if (std::isnan(temp) || std::isinf(temp)
+        || std::isnan(tempN) || std::isinf(tempN) || fabs(tempN) < epsilon)
+        s[j] = 0.0;
+      else
+        s[j] = temp - (icFloatNumber)((int)(temp / tempN))*tempN;
     }
     OsShrinkArgs(n);
     return true;
@@ -1192,7 +1202,17 @@ public:
     icFloatNumber *s = &(*os.pStack)[ss-n];
     for (j=0; j<n; j++) {
       //Casting to an int results in truncation
-      s[j] = (icFloatNumber)((int)(s[j]));
+      icFloatNumber temp = s[j];
+      if (std::isnan(temp))
+        s[j] = 0.0;
+      else if (std::isinf(temp)) {
+        if (temp > 0.0)
+            s[j] = (icFloatNumber)std::numeric_limits<int>::max();
+        else
+            s[j] = (icFloatNumber)std::numeric_limits<int>::lowest();
+      }
+      else
+        s[j] = (icFloatNumber)((int)temp);
     }
     return true;
   }
@@ -1243,10 +1263,15 @@ public:
       return false;
     icFloatNumber *s = &(*os.pStack)[ss-n];
     for (j=0; j<n; j++) {
-      if (s[j]<0.0)
-        s[j] = icFloatNumber((int)(s[j]-0.5));
+      icFloatNumber temp = s[j];
+      if (std::isnan(temp))
+        temp = 0.0;
+      else if (std::isinf(temp))
+        temp = 10000.0;          // value chosen arbitrarily to not overflow int
+      if (temp < 0.0)
+        s[j] = icFloatNumber((int)(temp-0.5));
       else
-        s[j] = icFloatNumber((int)(s[j]+0.5));
+        s[j] = icFloatNumber((int)(temp+0.5));
     }
     return true;
   }
@@ -1784,11 +1809,12 @@ public:
 * 
 * Return: 
 ******************************************************************************/
-void SIccCalcOp::Describe(std::string &desc, int nVerboseness)
-{ 
-  char buf[300];
+void SIccCalcOp::Describe(std::string &desc, int /* nVerboseness */)
+{
+  const size_t bufSize = 300;
+  char buf[bufSize];
   if (sig==icSigDataOp) {
-    sprintf(buf, "%.8g", data.num);
+    snprintf(buf, bufSize, "%.8g", data.num);
     desc = buf;
     return;
   }
@@ -1796,7 +1822,7 @@ void SIccCalcOp::Describe(std::string &desc, int nVerboseness)
   char name[10];
   int i;
 
-  icGetSig(name, sig, false);
+  icGetSig(name, 10, sig, false);
   name[5]=0;
   for (i=4; i>0; i--)
     if (name[i]==' ')
@@ -1812,16 +1838,16 @@ void SIccCalcOp::Describe(std::string &desc, int nVerboseness)
     case icSigTempPutChanOp:
     case icSigTempSaveChanOp:
       if (!data.select.v2)
-        sprintf(buf, "[%d]", data.select.v1);
+        snprintf(buf, bufSize, "[%d]", data.select.v1);
       else
-        sprintf(buf, "[%d,%d]", data.select.v1, data.select.v2+1);
+        snprintf(buf, bufSize, "[%d,%d]", data.select.v1, data.select.v2+1);
       desc += buf;
       break;
 
     case icSigEnvVarOp:
       {
         char varName[10];
-        icGetSigStr(varName, (icSignature)data.size);
+        icGetSigStr(varName, 10, (icSignature)data.size);
         int l=(int)strlen(varName);
         if (l==9) { //Remove h at end
           varName[8]=0;
@@ -1833,7 +1859,7 @@ void SIccCalcOp::Describe(std::string &desc, int nVerboseness)
             varName[l]=0;
           }
         }
-        sprintf(buf, "(%s)", varName);
+        snprintf(buf, bufSize, "(%s)", varName);
         desc += buf;
       }
       break;
@@ -1846,36 +1872,36 @@ void SIccCalcOp::Describe(std::string &desc, int nVerboseness)
     case icSigApplyFromJabOp:
     case icSigApplyCalcOp:
     case icSigApplyElemOp:
-      sprintf(buf, "(%d)", data.select.v1);
+      snprintf(buf, bufSize, "(%d)", data.select.v1);
       desc += buf;
       break;
 
     case icSigPopOp:
-      sprintf(buf, "(%d)", data.select.v1+1);
+      snprintf(buf, bufSize, "(%d)", data.select.v1+1);
       desc += buf;
       break;
 
     case icSigSolveOp:
     case icSigTransposeOp:
-      sprintf(buf, "(%d,%d)", data.select.v1+1, data.select.v2+1);
+      snprintf(buf, bufSize, "(%d,%d)", data.select.v1+1, data.select.v2+1);
       desc += buf;
       break;
 
     case icSigRotateLeftOp:       
     case icSigRotateRightOp:
-      sprintf(buf, "(%d,%d)", data.select.v1, data.select.v2);
+      snprintf(buf, bufSize, "(%d,%d)", data.select.v1, data.select.v2);
       break;
 
     case icSigCopyOp:             
     case icSigPositionDupOp:
       if (!data.select.v2) {
         if (data.select.v1) {
-          sprintf(buf, "(%d)", data.select.v1+1);
+          snprintf(buf, bufSize, "(%d)", data.select.v1+1);
           desc += buf;
         }
       }
       else {
-        sprintf(buf, "(%d,%d)", data.select.v1+1, data.select.v2+1);
+        snprintf(buf, bufSize, "(%d,%d)", data.select.v1+1, data.select.v2+1);
         desc += buf;
       }
       break;
@@ -1888,7 +1914,7 @@ void SIccCalcOp::Describe(std::string &desc, int nVerboseness)
     case icSigAndOp:
     case icSigOrOp:
       if (data.select.v1) {
-        sprintf(buf, "(%d)", data.select.v1+2);
+        snprintf(buf, bufSize, "(%d)", data.select.v1+2);
         desc += buf;
       }
       break;
@@ -1943,9 +1969,12 @@ void SIccCalcOp::Describe(std::string &desc, int nVerboseness)
     case icSigVectorAndOp:
     case icSigVectorOrOp:
       if (data.select.v1) {
-        sprintf(buf, "[%d]", data.select.v1+1);
+        snprintf(buf, bufSize, "[%d]", data.select.v1+1);
         desc += buf;
       }
+      break;
+    
+    default:
       break;
   }
 }
@@ -2221,6 +2250,9 @@ bool SIccCalcOp::IsValidOp(CIccMpeCalculator *pCalc)
 ******************************************************************************/
 icUInt16Number SIccCalcOp::ArgsUsed(CIccMpeCalculator *pCalc)
 {
+  // make sure our max value fits in our result type
+  static_assert( icMaxDataStackSize <= std::numeric_limits<icUInt16Number>::max() );
+  
   switch (sig) {
     case icSigDataOp:
     case icSigPiOp:
@@ -2248,38 +2280,62 @@ icUInt16Number SIccCalcOp::ArgsUsed(CIccMpeCalculator *pCalc)
     case icSigOutputChanOp:
     case icSigTempPutChanOp:
     case icSigTempSaveChanOp:
-      return data.select.v2+1;
+      {
+      uint32_t fullSum = ((uint32_t)data.select.v2+1);
+      if (fullSum > icMaxDataStackSize)
+        fullSum = icMaxDataStackSize;
+      return (icUInt16Number)fullSum;
+      }
 
     case icSigCopyOp:
     case icSigRotateLeftOp:       
     case icSigRotateRightOp:
     case icSigPositionDupOp:
     case icSigPopOp:
-      return data.select.v1+1;
+      {
+      uint32_t fullSum = ((uint32_t)data.select.v1+1);
+      if (fullSum > icMaxDataStackSize)
+        fullSum = icMaxDataStackSize;
+      return (icUInt16Number)fullSum;
+      }
 
     case icSigSolveOp:
-      return (data.select.v1+1)*(data.select.v2+1) + (data.select.v1+1);
+      {
+      uint64_t fullResult = ((uint64_t)data.select.v1+1)
+                            *((uint64_t)data.select.v2+1)
+                            + ((uint64_t)data.select.v1+1);
+      if (fullResult > icMaxDataStackSize)
+        fullResult = icMaxDataStackSize;
+      return (icUInt16Number)fullResult;
+      }
 
     case icSigTransposeOp:
-      return (data.select.v1+1)*(data.select.v2+1);
+      {
+      uint64_t fullResult = ((uint64_t)data.select.v1+1)
+                            *((uint64_t)data.select.v2+1);
+      if (fullResult > icMaxDataStackSize)
+        fullResult = icMaxDataStackSize;
+      return (icUInt16Number)fullResult;
+      }
 
     case icSigFlipOp:
-      return data.select.v1+2;
-
     case icSigSumOp:              
     case icSigProductOp:         
     case icSigMinimumOp:          
     case icSigMaximumOp:          
     case icSigAndOp:
     case icSigOrOp:
-      return data.select.v1+2;
-
     case icSigGammaOp:
     case icSigScalarAddOp:
     case icSigScalarSubtractOp:
     case icSigScalarMultiplyOp:
     case icSigScalarDivideOp:
-      return data.select.v1+2;
+      {
+      uint32_t fullSum = ((uint32_t)data.select.v1+2);
+      if (fullSum > icMaxDataStackSize)
+        fullSum = icMaxDataStackSize;
+      return (icUInt16Number)fullSum;
+      }
 
     case icSigAddOp:
     case icSigSubtractOp:
@@ -2301,7 +2357,12 @@ icUInt16Number SIccCalcOp::ArgsUsed(CIccMpeCalculator *pCalc)
     case icSigVectorMaximumOp:
     case icSigVectorAndOp:
     case icSigVectorOrOp:
-      return (data.select.v1+1)*2;
+      {
+      uint32_t fullSum = 2*((uint32_t)data.select.v1+1);
+      if (fullSum > icMaxDataStackSize)
+        fullSum = icMaxDataStackSize;
+      return (icUInt16Number)fullSum;
+      }
 
     case icSigSquareOp:       
     case icSigSquareRootOp:       
@@ -2325,11 +2386,21 @@ icUInt16Number SIccCalcOp::ArgsUsed(CIccMpeCalculator *pCalc)
     case icSigArcCosineOp:        
     case icSigArcTangentOp:      
     case icSigNotOp:
-      return data.select.v1+1;
+      {
+      uint32_t fullSum = ((uint32_t)data.select.v1+1);
+      if (fullSum > icMaxDataStackSize)
+        fullSum = icMaxDataStackSize;
+      return (icUInt16Number)fullSum;
+      }
     
     case icSigToLabOp:
     case icSigToXYZOp:
-      return (data.select.v1+1)*3;
+      {
+      uint32_t fullSum = 3*((uint32_t)data.select.v1+1);
+      if (fullSum > icMaxDataStackSize)
+        fullSum = icMaxDataStackSize;
+      return (icUInt16Number)fullSum;
+      }
 
     case icSigIfOp:
     case icSigSelectOp:
@@ -2345,14 +2416,17 @@ icUInt16Number SIccCalcOp::ArgsUsed(CIccMpeCalculator *pCalc)
 ******************************************************************************
 * Name: SIccCalcOp::ArgsPushed
 * 
-* Purpose: 
-* 
-* Args: 
-* 
-* Return: 
+* Purpose: Checking for stack over/underflow
+*
+* Args: calculator object pointer
+*
+* Return: number of stack spaces pushed OR icMaxDataStackSize if too large
 ******************************************************************************/
 icUInt16Number SIccCalcOp::ArgsPushed(CIccMpeCalculator *pCalc)
 {
+  // make sure our max value fits in our result type
+  static_assert( icMaxDataStackSize <= std::numeric_limits<icUInt16Number>::max() );
+
   switch (sig) {
     case icSigOutputChanOp:
     case icSigTempPutChanOp:
@@ -2378,7 +2452,12 @@ icUInt16Number SIccCalcOp::ArgsPushed(CIccMpeCalculator *pCalc)
     case icSigInputChanOp:        
     case icSigTempGetChanOp:
     case icSigTempSaveChanOp:
-      return data.select.v2+1;
+      {
+      uint32_t fullSum = ((uint32_t)data.select.v2+1);
+      if (fullSum > icMaxDataStackSize)
+        fullSum = icMaxDataStackSize;
+      return (icUInt16Number)fullSum;
+      }
 
     case icSigApplyCurvesOp:
     case icSigApplyMatrixOp:
@@ -2393,23 +2472,56 @@ icUInt16Number SIccCalcOp::ArgsPushed(CIccMpeCalculator *pCalc)
         return (pMpe ? pMpe->NumOutputChannels() : 0);
       }
 
-    case icSigCopyOp:             
-      return (data.select.v1+1)*(data.select.v2+2);
-    case icSigRotateLeftOp:       
+    case icSigCopyOp:
+      {
+      uint64_t fullResult = ((uint64_t)data.select.v1+1)
+                            *((uint64_t)data.select.v2+2);
+      if (fullResult > icMaxDataStackSize)
+        fullResult = icMaxDataStackSize;
+      return (icUInt16Number)fullResult;
+      }
+    
+    case icSigRotateLeftOp:
     case icSigRotateRightOp:
-      return (data.select.v1+1);
+      {
+      uint32_t fullSum = ((uint32_t)data.select.v1+1);
+      if (fullSum > icMaxDataStackSize)
+        fullSum = icMaxDataStackSize;
+      return (icUInt16Number)fullSum;
+      }
 
     case icSigFlipOp:
-      return (data.select.v1+2);
+      {
+      uint32_t fullSum = ((uint32_t)data.select.v1+2);
+      if (fullSum > icMaxDataStackSize)
+        fullSum = icMaxDataStackSize;
+      return (icUInt16Number)fullSum;
+      }
 
     case icSigPositionDupOp:
-      return data.select.v1+2+data.select.v2;
+      {
+      uint32_t fullSum = (uint32_t)data.select.v1+2+(uint32_t)data.select.v2;
+      if (fullSum > icMaxDataStackSize)
+        fullSum = icMaxDataStackSize;
+      return (icUInt16Number)fullSum;
+      }
 
     case icSigSolveOp:
-      return (data.select.v2+1) + 1;
+      {
+      uint32_t fullSum = ((uint32_t)data.select.v2+2);
+      if (fullSum > icMaxDataStackSize)
+        fullSum = icMaxDataStackSize;
+      return (icUInt16Number)fullSum;
+      }
 
     case icSigTransposeOp:
-      return (data.select.v1+1)*(data.select.v2+1);
+      {
+      uint64_t fullResult = ((uint64_t)data.select.v1+1)
+                            *((uint64_t)data.select.v2+1);
+      if (fullResult > icMaxDataStackSize)
+        fullResult = icMaxDataStackSize;
+      return (icUInt16Number)fullResult;
+      }
 
     case icSigSumOp:
     case icSigProductOp:         
@@ -2464,15 +2576,30 @@ icUInt16Number SIccCalcOp::ArgsPushed(CIccMpeCalculator *pCalc)
     case icSigVectorMaximumOp:
     case icSigVectorAndOp:
     case icSigVectorOrOp:
-      return data.select.v1+1;
+      {
+      uint32_t fullSum = ((uint32_t)data.select.v1+1);
+      if (fullSum > icMaxDataStackSize)
+        fullSum = icMaxDataStackSize;
+      return (icUInt16Number)fullSum;
+      }
 
     case icSigCartesianToPolarOp:
     case icSigPolarToCartesianOp:
-      return (data.select.v1+1)*2;
+      {
+      uint32_t fullSum = 2*((uint32_t)data.select.v1+1);
+      if (fullSum > icMaxDataStackSize)
+        fullSum = icMaxDataStackSize;
+      return (icUInt16Number)fullSum;
+      }
 
     case icSigToLabOp:
     case icSigToXYZOp:
-      return (data.select.v1+1)*3;
+      {
+      uint32_t fullSum = 3*((uint32_t)data.select.v1+1);
+      if (fullSum > icMaxDataStackSize)
+        fullSum = icMaxDataStackSize;
+      return (icUInt16Number)fullSum;
+      }
 
     default:
       return 0;
@@ -2843,18 +2970,16 @@ void CIccCalculatorFunc::InsertBlanks(std::string &sDescription, int nBlanks)
 void CIccCalculatorFunc::DescribeSequence(std::string &sDescription,
                                        icUInt32Number nOps, SIccCalcOp *op, int nBlanks)
 {
-  icUInt32Number i;
-  int pos;
   std::string opName;
   std::string funcDesc;
 
   InsertBlanks(funcDesc, nBlanks);
   funcDesc += "{ ";
 
-  pos = nBlanks + 2;
+  int pos = nBlanks + 2;
 
-  for (i=0; i<nOps;) {
-    if (pos >nBlanks + 65) {
+  for (icUInt32Number i=0; i<nOps;) {
+    if (pos > (nBlanks + 65)) {
       funcDesc += "\n";
       InsertBlanks(funcDesc, nBlanks + 2);
       pos = nBlanks + 2;
@@ -2868,9 +2993,10 @@ void CIccCalculatorFunc::DescribeSequence(std::string &sDescription,
     if (op->sig == icSigIfOp) {
       SIccCalcOp *ifop = op;
 
-      if  (i+1<nOps && op[1].sig == icSigElseOp) {
+      if  ((i+1)<nOps && op[1].sig == icSigElseOp) {
         SIccCalcOp *elseop = &op[1];
-        icUInt32Number nSubOps = (icUInt32Number)icIntMin(nOps-i, ifop->data.size);
+        icUInt32Number remaining = nOps - i - 2;
+        icUInt32Number nSubOps = (icUInt32Number)icIntMin(remaining, ifop->data.size);
         op++;
         i++;
         funcDesc += "\n";
@@ -2880,15 +3006,17 @@ void CIccCalculatorFunc::DescribeSequence(std::string &sDescription,
 
         InsertBlanks(funcDesc, nBlanks+2);
         funcDesc += "else\n";
-        pos = 0;
-
-        nSubOps = (icUInt32Number)icIntMin(nOps-i, elseop->data.size);
+        //pos = 0;  // value overwritten below
+        
+        remaining = nOps - i - 1;
+        nSubOps = (icUInt32Number)icIntMin(remaining, elseop->data.size);
         DescribeSequence(funcDesc, nSubOps, &op[1], nBlanks+2);
         op += nSubOps;
         i += nSubOps;
       }
       else {
-        icUInt32Number nSubOps = (icUInt32Number)icIntMin(nOps-i, ifop->data.size);
+        icUInt32Number remaining = nOps - i - 1;
+        icUInt32Number nSubOps = (icUInt32Number)icIntMin(remaining, ifop->data.size);
         funcDesc += "\n";
         DescribeSequence(funcDesc, nSubOps, &op[1], nBlanks+2);
         op += nSubOps;
@@ -2938,6 +3066,7 @@ void CIccCalculatorFunc::DescribeSequence(std::string &sDescription,
     op++;
     i++;
   }
+  
   funcDesc += "}\n";
 
   sDescription += funcDesc;
@@ -2953,7 +3082,7 @@ void CIccCalculatorFunc::DescribeSequence(std::string &sDescription,
  * 
  * Return: 
  ******************************************************************************/
-void CIccCalculatorFunc::Describe(std::string &sDescription, int nVerboseness, int nBlanks)
+void CIccCalculatorFunc::Describe(std::string &sDescription, int /* nVerboseness */, int nBlanks)
 {
   if (m_nOps) {
     DescribeSequence(sDescription, m_nOps, m_Op, nBlanks);
@@ -3459,7 +3588,7 @@ bool CIccCalculatorFunc::SetOpDefs()
  * 
  * Return: 
  ******************************************************************************/
-bool CIccCalculatorFunc::Begin(const CIccMpeCalculator *pChannelCalc, CIccTagMultiProcessElement *pMPE)
+bool CIccCalculatorFunc::Begin(const CIccMpeCalculator *pChannelCalc, CIccTagMultiProcessElement * /* pMPE */)
 {
   if (!pChannelCalc)
     return false;
@@ -3613,7 +3742,15 @@ bool CIccCalculatorFunc::ApplySequence(CIccApplyMpeCalculator *pApply, icUInt32N
     else if (op->sig==icSigSelectOp) {
       icFloatNumber a1;
       OsPopArg(a1);
-      icInt32Number nSel = (a1 >= 0.0) ? (icInt32Number)(a1+0.5f) : (icInt32Number)(a1-0.5f);
+      if (std::isnan(a1))
+        a1 = 0.0;
+        
+      icInt32Number nSel;
+      if (std::isinf(a1)) {
+        nSel = (a1 < 0.0) ? std::numeric_limits<icInt32Number>::lowest() : std::numeric_limits<icInt32Number>::max();
+      }
+      else
+        nSel = (a1 >= 0.0) ? (icInt32Number)(a1+0.5f) : (icInt32Number)(a1-0.5f);
 
       if (!op->extra) {
         return false;
@@ -3857,6 +3994,10 @@ bool CIccCalculatorFunc::SequenceNeedTempReset(SIccCalcOp *op, icUInt32Number nO
       memcpy(ifTemps, tempUsage, nMaxTemp);
 
       p=i+2;
+      if (p > nOps) {
+        free(ifTemps);
+        return true;
+      }
       rv = rv || SequenceNeedTempReset(&op[p], icIntMin(nOps-p, op[i].data.size), ifTemps, nMaxTemp);
 
       if (i<nOps && op[i+1].sig==icSigElseOp) {
@@ -3869,6 +4010,11 @@ bool CIccCalculatorFunc::SequenceNeedTempReset(SIccCalcOp *op, icUInt32Number nO
         memcpy(elseTemps, tempUsage, nMaxTemp);
 
         p=i+2+op[i].data.size;
+        if (p > nOps) {
+          free(ifTemps);
+          free(elseTemps);
+          return true;
+        }
         rv = rv || SequenceNeedTempReset(&op[p], icIntMin(nOps-p, op[i+1].data.size), elseTemps, nMaxTemp);
 
         if (!rv) {
@@ -3908,18 +4054,19 @@ bool CIccCalculatorFunc::SequenceNeedTempReset(SIccCalcOp *op, icUInt32Number nO
 int CIccCalculatorFunc::CheckUnderflowOverflow(SIccCalcOp *op, icUInt32Number nOps, int nArgs, bool bCheckUnderflow, std::string &sReport) const
 {
   icUInt32Number i, p;
-  int n, nIfArgs, nElseArgs, nSelArgs, nCaseArgs;
+  int nIfArgs, nElseArgs, nSelArgs, nCaseArgs;
+
 
   for (i=0; i<nOps; i++) {
-    n = op[i].ArgsUsed(m_pCalc);
+    int nArgsUsed = op[i].ArgsUsed(m_pCalc);
 
 #if 0
     std::string opstr;
     op[i].Describe(opstr);
-    printf("%s : %d %d\n", opstr.c_str(), n, nArgs);
+    printf("%s : %d %d\n", opstr.c_str(), nArgsUsed, nArgs);
 #endif
 
-    if (n > nArgs) {
+    if (nArgsUsed > nArgs) {
       std::string opDesc;
       icUInt32Number j, l;
       icInt32Number f;
@@ -3933,7 +4080,7 @@ int CIccCalculatorFunc::CheckUnderflowOverflow(SIccCalcOp *op, icUInt32Number nO
         l=nOps-1;
       for (j=(icUInt32Number)f; j<=l; j++) {
         op[j].Describe(opDesc, 100); // TODO - propogate nVerboseness
-        if (j!=f)
+        if (j!=(icUInt32Number)f)
           sReport += " ";
         sReport += opDesc;
       }
@@ -3941,7 +4088,7 @@ int CIccCalculatorFunc::CheckUnderflowOverflow(SIccCalcOp *op, icUInt32Number nO
       return -1;
     }
 
-    nArgs -= n;
+    nArgs -= nArgsUsed;
     nArgs += op[i].ArgsPushed(m_pCalc);
 
     if (nArgs>icMaxDataStackSize)
@@ -3951,12 +4098,16 @@ int CIccCalculatorFunc::CheckUnderflowOverflow(SIccCalcOp *op, icUInt32Number nO
       int incI = 0;
       if (i+1<nOps && op[i+1].sig==icSigElseOp) {
         p = i+2; 
+        if (p > nOps)
+          return -1;
         nIfArgs = CheckUnderflowOverflow(&op[p], icIntMin(nOps-p, op[i].data.size), nArgs, bCheckUnderflow, sReport);
         if (nIfArgs<0)
           return -1;
         incI =op[i].data.size;
 
         p = i+2+op[i].data.size;
+        if (p > nOps)
+          return -1;
         nElseArgs = CheckUnderflowOverflow(&op[p], icIntMin(nOps-p, op[i+1].data.size), nArgs, bCheckUnderflow, sReport);
         if (nElseArgs<0)
           return -1;
@@ -3968,6 +4119,8 @@ int CIccCalculatorFunc::CheckUnderflowOverflow(SIccCalcOp *op, icUInt32Number nO
       }
       else {
         p = i+1; 
+        if (p > nOps)
+          return -1;
         nIfArgs = CheckUnderflowOverflow(&op[p], icIntMin(nOps-p, op[i].data.size), nArgs, bCheckUnderflow, sReport);
         if (nIfArgs<0)
           return -1;
@@ -4002,6 +4155,8 @@ int CIccCalculatorFunc::CheckUnderflowOverflow(SIccCalcOp *op, icUInt32Number nO
         if (pos>=nOps)
           return -1;
 
+        if (pos > nOps)
+          return -1;
         nCaseArgs = CheckUnderflowOverflow(&op[pos], icIntMin(nOps-pos, len), nArgs, bCheckUnderflow, sReport);
         if (nCaseArgs<0)
           return -1;
@@ -4430,18 +4585,19 @@ icFuncParseStatus CIccMpeCalculator::SetCalcFunc(const char *szFuncDef, std::str
 void CIccMpeCalculator::Describe(std::string &sDescription, int nVerboseness)
 {
   if (m_calcFunc) {
-    icChar buf[81];
+    const size_t bufSize = 81;
+    icChar buf[bufSize];
 
-    sprintf(buf, "BEGIN_CALC_ELEMENT %u %u\n", m_nInputChannels, m_nOutputChannels); 
+    snprintf(buf, bufSize, "BEGIN_CALC_ELEMENT %u %u\n", m_nInputChannels, m_nOutputChannels);
     sDescription += buf;
 
     if (m_nSubElem && m_SubElem) {
       icUInt32Number i;
       for (i=0; i<m_nSubElem; i++) {
-        sprintf(buf, "BEGIN_SUBCALCELEM %u\n", i);
+        snprintf(buf, bufSize, "BEGIN_SUBCALCELEM %u\n", i);
         sDescription += buf;
         m_SubElem[i]->Describe(sDescription, nVerboseness);
-        sprintf(buf, "END_SUBCALCELEM %u\n\n", i);
+        snprintf(buf, bufSize, "END_SUBCALCELEM %u\n\n", i);
         sDescription += buf;
       }
     }
@@ -4452,7 +4608,7 @@ void CIccMpeCalculator::Describe(std::string &sDescription, int nVerboseness)
       sDescription += "END_CALC_FUNCTION\n";
     }
 
-    sprintf(buf, "END_CALC_ELEMENT\n");
+    snprintf(buf, bufSize, "END_CALC_ELEMENT\n");
     sDescription += buf;
 
   }
@@ -4475,16 +4631,14 @@ bool CIccMpeCalculator::Read(icUInt32Number size, CIccIO *pIO)
 {
   icElemTypeSignature sig;
 
-  icUInt32Number startPos = pIO->Tell();
+  size_t startPos = pIO->Tell();
   
-  icUInt32Number headerSize = sizeof(icTagTypeSignature) + 
-    sizeof(icUInt32Number) + 
-    sizeof(icUInt16Number) + 
-    sizeof(icUInt16Number) +
-    sizeof(icUInt16Number) +
-    sizeof(icUInt16Number) +
-    sizeof(icUInt16Number) +
-    sizeof(icUInt16Number);
+  size_t headerSize = sizeof(icTagTypeSignature) + // typeSig
+    sizeof(icUInt32Number) +    // reserved
+    sizeof(icUInt16Number) +    // inputChannels
+    sizeof(icUInt16Number) +    // outputChannels
+    sizeof(icUInt32Number) +    // SubElement count
+    sizeof(icPositionNumber);   // at least one icPositionNumber
 
   if (headerSize > size)
     return false;
@@ -4514,6 +4668,11 @@ bool CIccMpeCalculator::Read(icUInt32Number size, CIccIO *pIO)
   if (!pIO->Read32(&nSubElem))
     return false;
 
+  // Prevent excessive allocation and overflows - limit to 65536 elements (reasonable max)
+  const icUInt32Number MAX_CALC_ELEMENTS = 65536;
+  if (nSubElem >= MAX_CALC_ELEMENTS)
+    return false;
+
   icUInt32Number nPos = nSubElem + 1;
 
   if (headerSize + (icUInt64Number)nPos*sizeof(icPositionNumber) > size) {
@@ -4538,10 +4697,14 @@ bool CIccMpeCalculator::Read(icUInt32Number size, CIccIO *pIO)
     SetSubElem(nSubElem-1, NULL); //Initialize array
 
     for (n=0; n<nSubElem; n++) {
-      if (pos->offset + pos->size > size) {
+      // No, you may not make circular references in the tag,
+      // reference back into the tag header,
+      // or try to load more data than we have available.
+      if ( (pos->offset < headerSize) || ((pos->offset + pos->size) > size) ) {
         free(posvals);
         return false;
       }
+      
       pIO->Seek(startPos + pos->offset, icSeekSet);
 
       if (!pIO->Read32(&elemSig)) {
@@ -4560,15 +4723,16 @@ bool CIccMpeCalculator::Read(icUInt32Number size, CIccIO *pIO)
         free(posvals);
         return false;
       }
-      SetSubElem((icUInt16Number)n, (CIccMpeCalculator*)pElem);
+      SetSubElem((icUInt16Number)n, pElem);
       pos++;
     }
   }  
 
   m_calcFunc = new CIccCalculatorFunc(this);
   pos = posvals;
-
-  if (!m_calcFunc || pos->offset + pos->size > size) {
+  
+  // overreading, references into the header, or not having a calc func would be bad
+  if ( !m_calcFunc || (pos->offset < headerSize) || ((pos->offset + pos->size) > size) ) {
     free(posvals);
     return false;
   }
@@ -4576,8 +4740,10 @@ bool CIccMpeCalculator::Read(icUInt32Number size, CIccIO *pIO)
   pIO->Seek(startPos + pos->offset, icSeekSet);
 
   if (!m_calcFunc->Read(pos->size, pIO)) {
+    free(posvals);
     return false;
   }
+  
   free(posvals);
 
   pIO->Seek(startPos + size, icSeekSet);
@@ -4602,7 +4768,7 @@ bool CIccMpeCalculator::Write(CIccIO *pIO)
   if (!pIO)
     return false;
 
-  icUInt32Number elemStart = pIO->Tell();
+  size_t elemStart = pIO->Tell();
 
   if (!pIO->Write32(&sig))
     return false;
@@ -4625,21 +4791,21 @@ bool CIccMpeCalculator::Write(CIccIO *pIO)
   if (!posvals) {
     return false;
   }
-  icUInt32Number nPositionStart = pIO->Tell();
+  size_t nPositionStart = pIO->Tell();
 
-  icUInt32Number n, np = nPos * (sizeof(icPositionNumber)/sizeof(icUInt32Number));
+  size_t n, np = nPos * (sizeof(icPositionNumber)/sizeof(icUInt32Number));
   if (pIO->Write32(posvals, np)!=np) {
     free(posvals);
     return false;
   }
 
   if (m_calcFunc) {
-    posvals[0].offset = pIO->Tell()-elemStart;
+    posvals[0].offset = (icUInt32Number)(pIO->Tell() - elemStart);
     if (!m_calcFunc->Write(pIO)) {
       free(posvals);
       return false;
     }
-    posvals[0].size = pIO->Tell()-elemStart - posvals[nPos-1].offset;
+    posvals[0].size = (icUInt32Number)(pIO->Tell() - elemStart - posvals[nPos-1].offset );
     pIO->Align32();
   }
 
@@ -4648,18 +4814,18 @@ bool CIccMpeCalculator::Write(CIccIO *pIO)
   if (m_nSubElem) {
     for(n=0; n<m_nSubElem; n++) {
       if (m_SubElem[n]) {
-        pos->offset = pIO->Tell()-elemStart;
+        pos->offset = (icUInt32Number)( pIO->Tell()-elemStart );
         if (!m_SubElem[n]->Write(pIO)) {
           free(posvals);
           return false;
         }
-        pos->size = pIO->Tell()-elemStart - pos->offset;
+        pos->size = (icUInt32Number)(pIO->Tell()-elemStart - pos->offset);
         pIO->Align32();
       }
       pos++;
     }
   }
-  icUInt32Number endPos = pIO->Tell();
+  size_t endPos = pIO->Tell();
 
   pIO->Seek(nPositionStart, icSeekSet);
 
@@ -4733,7 +4899,7 @@ bool CIccMpeCalculator::Begin(icElemInterp nInterp, CIccTagMultiProcessElement *
 ******************************************************************************/
 CIccApplyMpe *CIccMpeCalculator::GetNewApply(CIccApplyTagMpe *pApplyTag)
 {
-  CIccApplyTagMpe *pApplyTagEx = (CIccApplyTagMpe*)pApplyTag;
+  //CIccApplyTagMpe *pApplyTagEx = (CIccApplyTagMpe*)pApplyTag;
 
   CIccApplyMpeCalculator *pApply = new CIccApplyMpeCalculator(this);
 
@@ -4802,7 +4968,7 @@ void CIccMpeCalculator::Apply(CIccApplyMpe *pApply, icFloatNumber *pDestPixel, c
     g_pDebugger->EndApply();
   }
   else {
-    rv = m_calcFunc->Apply(pApplyCalc);
+    (void) m_calcFunc->Apply(pApplyCalc);
   }
 }
 
@@ -4946,6 +5112,11 @@ CIccMultiProcessElement *CIccMpeCalculator::GetElem(icSigCalcOp opsig, icUInt16N
 bool CIccMpeCalculator::SetElem(icUInt32Number idx, CIccMultiProcessElement *pElem, icUInt32Number &count, CIccMultiProcessElement ***pArray)
 {
   bool rv = true;
+
+  // Prevent excessive allocation - limit to 65536 elements (reasonable max)
+  const icUInt32Number MAX_CALC_ELEMENTS = 65536;
+  if (idx >= MAX_CALC_ELEMENTS)
+    return false;
 
   if (idx + 1 > count) {
     if (*pArray) {

@@ -79,8 +79,8 @@
 #include <cstring>
 #include <cstdio>
 
-#ifdef USEREFICCMAXNAMESPACE
-namespace refIccMAX {
+#ifdef USEICCDEVNAMESPACE
+namespace iccDEV {
 #endif
 
 /**
@@ -176,12 +176,13 @@ void CIccMatrixMath::VectorMult(icFloatNumber *pDst, const icFloatNumber *pSrc) 
 */
 void CIccMatrixMath::dumpMtx(std::string &str) const
 {
-  char buf[80];
+  const size_t bufSize = 80;
+  char buf[bufSize];
   int i, j;
   const icFloatNumber *row = entry(0);
   for (j=0; j<m_nRows; j++) {
     for (i=0; i<m_nCols; i++) {
-      sprintf(buf, ICCMTXSTEPDUMPFMT, row[i]);
+      snprintf(buf, bufSize, ICCMTXSTEPDUMPFMT, row[i]);
       str += buf;
     }
     str += "\n";
@@ -360,8 +361,8 @@ bool CIccMatrixMath::SetRange(const icSpectralRange &srcRange, const icSpectralR
   icFloatNumber srcEnd = icF16toF(srcRange.end);
   icFloatNumber dstStart = icF16toF(dstRange.start);
   icFloatNumber dstEnd = icF16toF(dstRange.end);
-  icFloatNumber srcDiff = srcEnd - srcStart;
-  icFloatNumber dstDiff = dstEnd - dstStart;
+  //icFloatNumber srcDiff = srcEnd - srcStart;
+  //icFloatNumber dstDiff = dstEnd - dstStart;
   icFloatNumber srcScale = (srcEnd - srcStart) / (srcRange.steps-1);
   icFloatNumber dstScale = (dstEnd - dstStart ) / (dstRange.steps - 1);
 
@@ -420,6 +421,6 @@ CIccMatrixMath *CIccMatrixMath::rangeMap(const icSpectralRange &srcRange, const 
   return NULL;
 }
 
-#ifdef USEREFICCMAXNAMESPACE
-} //namespace refIccMAX
+#ifdef USEICCDEVNAMESPACE
+} //namespace iccDEV
 #endif

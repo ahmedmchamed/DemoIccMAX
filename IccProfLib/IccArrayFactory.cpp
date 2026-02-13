@@ -74,10 +74,10 @@
 #include "IccArrayFactory.h"
 #include "IccUtil.h"
 #include "IccProfile.h"
-#include <string.h>
+#include <cstring>
 
-#ifdef USEREFICCMAXNAMESPACE
-namespace refIccMAX {
+#ifdef USEICCDEVNAMESPACE
+namespace iccDEV {
 #endif
 
 IIccArray* CIccBasicArrayFactory::CreateArray(icArraySignature arrayTypeSig, CIccTagArray *pTagArray)
@@ -118,7 +118,7 @@ bool CIccBasicArrayFactory::GetArraySigName(std::string &arrayName, icArraySigna
   if (!bFindUnknown) {
     char sig[20];
     arrayName = "UnknownStruct_";
-    icGetSigStr(sig, arrayTypeSig);
+    icGetSigStr(sig, 20, arrayTypeSig);
     arrayName += sig;
   }
   else {
@@ -207,7 +207,7 @@ void CIccArrayCreator::DoPushFactory(IIccArrayFactory *pFactory)
   factoryStack.push_front(pFactory);
 }
 
-IIccArrayFactory* CIccArrayCreator::DoPopFactory(bool bAll /*=false*/)
+IIccArrayFactory* CIccArrayCreator::DoPopFactory(bool /* bAll  =false */)
 {
   if (factoryStack.size()>0) {
     CIccArrayFactoryList::iterator i=factoryStack.begin();
@@ -218,6 +218,6 @@ IIccArrayFactory* CIccArrayCreator::DoPopFactory(bool bAll /*=false*/)
   return NULL;
 }
 
-#ifdef USEREFICCMAXNAMESPACE
-} //namespace refIccMAX
+#ifdef USEICCDEVNAMESPACE
+} //namespace iccDEV
 #endif

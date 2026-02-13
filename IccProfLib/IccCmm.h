@@ -5,15 +5,11 @@
 
     Version:    V1
 
-    Copyright:  (c) see ICC Software License
+    Copyright:  (c) see Software License
 */
 
 /*
- * The ICC Software License, Version 0.2
- *
- *
- * Copyright (c) 2003-2012 The International Color Consortium. All rights 
- * reserved.
+ * Copyright (c) International Color Consortium.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -81,8 +77,8 @@
 #include <cstring>
 #include <cstdlib>
 
-#if defined(__cpluplus) && defined(USEREFICCMAXNAMESPACE)
-namespace refIccMAX {
+#if defined(__cpluplus) && defined(USEICCDEVNAMESPACE)
+namespace iccDEV {
 #endif
   
 /// CMM return status values
@@ -107,6 +103,7 @@ typedef enum {
   icCmmStatBadTintXform       = 15,
   icCmmStatTooManySamples     = 16,
   icCmmStatBadMCSLink         = 17,
+  icCmmStatUnsupported        = 18,
 } icStatusCMM;
 
 /// CMM Interpolation types
@@ -232,7 +229,7 @@ public:
 
 	icColorSpaceSignature csPcs;
 	icColorSpaceSignature csDevice;
-  icSpectralColorSignature csSpectralPcs;
+  icColorSpaceSignature csSpectralPcs;
   icSpectralRange spectralRange;
   icSpectralRange biSpectralRange;
 };
@@ -405,7 +402,7 @@ public:
 
   virtual bool IsLateBinding() const { return false; }
   virtual IIccProfileConnectionConditions *GetProfileCC() const { return m_pProfile; }
-  virtual void SetAppliedCC(IIccProfileConnectionConditions *pPCC) {}
+  virtual void SetAppliedCC(IIccProfileConnectionConditions * /* pPCC */) {}
 
   bool IsMCS() const { return m_nMCS!=icNoMCS; }
 
@@ -597,7 +594,7 @@ public:
   virtual icUInt16Number GetSrcChannels() const =0;
   virtual icUInt16Number GetDstChannels() const =0;
 
-  virtual CIccPcsStep *concat(CIccPcsStep *pNext) const {return NULL;}
+  virtual CIccPcsStep *concat(CIccPcsStep * /* pNext */) const {return NULL;}
   virtual bool isIdentity() const { return false; }
   virtual CIccPcsStep *reduce() const { return (CIccPcsStep*)this; }
   
@@ -642,7 +639,7 @@ public:
   virtual icUInt16Number GetSrcChannels() const {return m_nChannels;}
   virtual icUInt16Number GetDstChannels() const {return m_nChannels;}
 
-  virtual CIccPcsStep *concat(CIccPcsStep *pNext) const {return NULL;}
+  virtual CIccPcsStep *concat(CIccPcsStep * /* pNext */) const {return NULL;}
   virtual bool isIdentity() const { return true; }
 
   virtual void dump(std::string &str) const;
@@ -664,7 +661,7 @@ public:
   virtual icUInt16Number GetSrcChannels() const {return m_nSrcChannels;}
   virtual icUInt16Number GetDstChannels() const {return m_nDstChannels;}
 
-  virtual CIccPcsStep *concat(CIccPcsStep *pNext) const {return NULL;}
+  virtual CIccPcsStep *concat(CIccPcsStep * /* pNext */) const {return NULL;}
   virtual bool isIdentity() const ;
 
   virtual void dump(std::string &str) const;
@@ -848,7 +845,7 @@ public:
 
   virtual ~CIccPcsStepMatrix() {}
 
-  virtual void Apply(CIccApplyPcsStep *pApply, icFloatNumber *pDst, const icFloatNumber *pSrc) const {VectorMult(pDst, pSrc); }//Must support pApply=NULL
+  virtual void Apply(CIccApplyPcsStep * /* pApply */, icFloatNumber *pDst, const icFloatNumber *pSrc) const {VectorMult(pDst, pSrc); }//Must support pApply=NULL
   virtual icUInt16Number GetSrcChannels() const { return m_nCols; }
   virtual icUInt16Number GetDstChannels() const { return m_nRows; }
 
@@ -919,7 +916,7 @@ public:
   icFloatNumber *data() { return m_vals;}
   const icFloatNumber *data() const { return m_vals;}
 
-  virtual CIccPcsStep *concat(CIccPcsStep *pNext) const { return NULL; }
+  virtual CIccPcsStep *concat(CIccPcsStep * /* pNext */) const { return NULL; }
 
   virtual void dump(std::string &str) const;
 protected:
@@ -944,7 +941,7 @@ public:
   icFloatNumber *data() { return m_vals;}
   const icFloatNumber *data() const { return m_vals;}
 
-  virtual CIccPcsStep *concat(CIccPcsStep *pNext) const { return NULL; }
+  virtual CIccPcsStep *concat(CIccPcsStep * /* pNext */) const { return NULL; }
 
   virtual void dump(std::string &str) const;
 protected:
@@ -969,7 +966,7 @@ public:
   icFloatNumber *data() { return m_vals;}
   const icFloatNumber *data() const { return m_vals;}
 
-  virtual CIccPcsStep *concat(CIccPcsStep *pNext) const { return NULL; }
+  virtual CIccPcsStep *concat(CIccPcsStep * /* pNext */) const { return NULL; }
 
   virtual void dump(std::string &str) const;
 protected:
@@ -1364,7 +1361,7 @@ class ICCPROFLIB_API CIccXformNamedColor : public CIccXform
 {
 public:
   CIccXformNamedColor(CIccTag *pTag, icColorSpaceSignature csPcs, icColorSpaceSignature csDevice, 
-                      icSpectralColorSignature csSpectralPcs=icSigNoSpectralData,
+                      icColorSpaceSignature csSpectralPcs=icSigNoSpectralData,
                       const icSpectralRange *pSpectralRange = NULL,
                       const icSpectralRange *pBiSPectralRange = NULL);
   virtual ~CIccXformNamedColor();
@@ -1376,7 +1373,7 @@ public:
   ///Returns the type of interface that will be applied
   icApplyInterface GetInterface() const {return m_nApplyInterface;}
 
-  virtual void Apply(CIccApplyXform *pApplyXform, icFloatNumber *DstPixel, const icFloatNumber *SrcPixel) const {} 
+  virtual void Apply(CIccApplyXform * /* pApplyXform */, icFloatNumber * /* DstPixel */, const icFloatNumber * /* SrcPixel */) const {}
 
   icStatusCMM Apply(CIccApplyXform *pApplyXform, icChar *DstColorName, const icFloatNumber *SrcPixel) const;
   icStatusCMM Apply(CIccApplyXform *pApplyXform, icFloatNumber *DstPixel, const icChar *SrcColorName, icFloatNumber tint=1.0f) const;
@@ -1638,7 +1635,8 @@ public:
                                icRenderingIntent nIntent=icUnknownIntent, 
                                icXformInterp nInterp=icInterpLinear,
                                IIccProfileConnectionConditions *pPcc=NULL,
-                               icXformLutType nLutType=icXformLutColor, bool bUseD2BxB2DxTags =true,
+                               icXformLutType nLutType=icXformLutColor,
+                               bool bUseD2BxB2DxTags =true,
                                CIccCreateXformHintManager *pHintManager=NULL,
                                bool bUseSubProfile=false);
   virtual icStatusCMM AddXform(CIccProfile *pProfile, 
@@ -1662,6 +1660,7 @@ public:
                                IIccProfileConnectionConditions *pPcc = NULL,
                                bool bUseD2BxB2DxTags =false,
                                CIccCreateXformHintManager *pHintManager = NULL);  //Note: profile will be owned by the CMM
+  virtual icStatusCMM AddXform(CIccXform* pXform); //note pXform will be owned by the CMM
 
   //The Begin function should be called before Apply or GetNewApplyCmm()
   virtual icStatusCMM Begin(bool bAllocNewApply=true, bool bUsePcsConversion=false);
@@ -1681,6 +1680,12 @@ public:
   ///Returns the number of profiles/transforms added 
   virtual icUInt32Number GetNumXforms() const;
 
+  ///Returns the number of profiles/transforms added 
+  bool HasXformsOfType(icXformType nXformType) const;
+
+  CIccXform* GetFirstXform() const;
+  CIccXform* GetLastXform() const;
+
   virtual void IterateXforms(IXformIterator* pIterater) const;
 
   ///Returns the source color space
@@ -1689,6 +1694,9 @@ public:
   icColorSpaceSignature GetDestSpace() const { return m_nDestSpace; }
     ///Returns the color space of the last profile added
   icColorSpaceSignature GetLastSpace() const { return m_nLastSpace; }
+  ///Returns the parent's color space of the last profile added
+  icColorSpaceSignature GetLastParentSpace() const { return m_nLastParentSpace; }
+
   ///Returns the rendering intent of the last profile added
   icRenderingIntent GetLastIntent() const { return m_nLastIntent; }
 
@@ -1749,6 +1757,7 @@ protected:
   icColorSpaceSignature m_nDestSpace;
 
   icColorSpaceSignature m_nLastSpace;
+  icColorSpaceSignature m_nLastParentSpace;
   icRenderingIntent m_nLastIntent;
 
   CIccXformList *m_Xforms;
@@ -1954,18 +1963,56 @@ public:
   static CIccMruCmm* Attach(CIccCmm *pCmm, icUInt8Number nCacheSize=6, bool bDeleteCmm=true);  //The returned object will own pCmm, and pCmm is deleted on failure.
 
   //override AddXform/Begin functions to return bad status.
-  virtual icStatusCMM AddXform(const icChar *szProfilePath, icRenderingIntent nIntent=icUnknownIntent,
-    icXformInterp nInterp=icInterpLinear, icXformLutType nLutType=icXformLutColor,
-    bool bUseMpeTags=true, CIccCreateXformHintManager *pHintManager=NULL) { return icCmmStatBad; }
-  virtual icStatusCMM AddXform(icUInt8Number *pProfileMem, icUInt32Number nProfileLen,
-    icRenderingIntent nIntent=icUnknownIntent, icXformInterp nInterp=icInterpLinear,
-    icXformLutType nLutType=icXformLutColor, bool bUseMpeTags=true, CIccCreateXformHintManager *pHintManager=NULL)  { return icCmmStatBad; }
-  virtual icStatusCMM AddXform(CIccProfile *pProfile, icRenderingIntent nIntent=icUnknownIntent,
-    icXformInterp nInterp=icInterpLinear, icXformLutType nLutType=icXformLutColor,
-    bool bUseMpeTags=true, CIccCreateXformHintManager *pHintManager=NULL)  { return icCmmStatBad; }
-  virtual icStatusCMM AddXform(CIccProfile &Profile, icRenderingIntent nIntent=icUnknownIntent,
-    icXformInterp nInterp=icInterpLinear, icXformLutType nLutType=icXformLutColor,
-    bool bUseMpeTags=true, CIccCreateXformHintManager *pHintManager=NULL) { return icCmmStatBad; }
+  virtual icStatusCMM AddXform(const icChar * /* szProfilePath */,
+                                icRenderingIntent /* nIntent=icUnknownIntent */,
+                                icXformInterp /* nInterp=icInterpLinear */,
+                                IIccProfileConnectionConditions * /*pPcc=NULL*/,
+                                icXformLutType /* nLutType=icXformLutColor */,
+                                bool /* bUseMpeTags=true */,
+                                CIccCreateXformHintManager * /* pHintManager=NULL */,
+                                bool /*bUseSubProfile=false*/)
+                        { return icCmmStatBad; }
+    
+  virtual icStatusCMM AddXform(icUInt8Number * /* pProfileMem */,
+                                icUInt32Number /*nProfileLen*/,
+                                icRenderingIntent /*nIntent=icUnknownIntent*/,
+                                icXformInterp /*nInterp=icInterpLinear*/,
+                                IIccProfileConnectionConditions * /*pPcc =NULL*/,
+                                icXformLutType /*nLutType=icXformLutColor*/,
+                                bool /*bUseMpeTags=true*/,
+                                CIccCreateXformHintManager * /*pHintManager=NULL*/,
+                                bool /*bUseSubProfile=false*/)
+                        { return icCmmStatBad; }
+    
+  virtual icStatusCMM AddXform(CIccProfile * /*pProfile*/,
+                                icRenderingIntent /*nIntent=icUnknownIntent*/,
+                                icXformInterp /*nInterp=icInterpLinear*/,
+                                IIccProfileConnectionConditions * /*pPcc =NULL*/,
+                                icXformLutType /*nLutType=icXformLutColor*/,
+                                bool /*bUseMpeTags=true*/,
+                                CIccCreateXformHintManager * /*pHintManager=NULL*/)
+                        { return icCmmStatBad; }
+    
+  virtual icStatusCMM AddXform(CIccProfile & /*Profile*/,
+                                icRenderingIntent /*nIntent=icUnknownIntent*/,
+                                icXformInterp /*nInterp=icInterpLinear*/,
+                                IIccProfileConnectionConditions * /*pPcc =NULL*/,
+                                icXformLutType /*nLutType=icXformLutColor*/,
+                                bool /*bUseMpeTags=true*/,
+                                CIccCreateXformHintManager * /*pHintManager=NULL*/)
+                        { return icCmmStatBad; }
+    
+  virtual icStatusCMM AddXform(CIccProfile * /*pProfile*/,
+                               CIccTag * /*pXformTag*/,
+                                icRenderingIntent /*nIntent=icUnknownIntent*/,
+                                icXformInterp /*nInterp=icInterpLinear*/,
+                                IIccProfileConnectionConditions * /*pPcc =NULL*/,
+                                bool /*bUseMpeTags=true*/,
+                                CIccCreateXformHintManager */*pHintManager=NULL*/)
+                        { return icCmmStatBad; }
+
+  virtual icStatusCMM AddXform(CIccXform * /*pXform*/)
+                        { return icCmmStatBad; }
 
   virtual CIccApplyCmm *GetNewApplyCmm(icStatusCMM &status); 
 
@@ -1986,8 +2033,8 @@ protected:
 
 #endif //__cplusplus
 
-#if defined(__cplusplus) && defined(USEREFICCMAXNAMESPACE)
-}; //namespace refIccMAX
+#if defined(__cplusplus) && defined(USEICCDEVNAMESPACE)
+}; //namespace iccDEV
 #endif
 
 #endif // !defined(_ICCCMM_H)

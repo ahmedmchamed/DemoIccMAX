@@ -6,15 +6,11 @@ and supporting classes
 
 Version:    V1
 
-Copyright:  (c) see ICC Software License
+Copyright:  (c) see Software License
 */
 
 /*
-* The ICC Software License, Version 0.2
-*
-*
-* Copyright (c) 2005 The International Color Consortium. All rights 
-* reserved.
+* Copyright (c) International Color Consortium.
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions
@@ -78,8 +74,8 @@ Copyright:  (c) see ICC Software License
 #include <memory>
 #include <list>
 
-#ifdef USEREFICCMAXNAMESPACE
-namespace refIccMAX {
+#ifdef USEICCDEVNAMESPACE
+namespace iccDEV {
 #endif
 
 class ICCPROFLIB_API CIccProfileIdDesc
@@ -150,7 +146,7 @@ protected:
 
 
 //CIccTagProfSeq support
-#ifdef USEREFICCMAXNAMESPACE
+#ifdef USEICCDEVNAMESPACE
 }
 #endif
 

@@ -3,7 +3,7 @@
 
     Contains:   ICC profile definitions and structures 
 
-    Copyright:  (c) see ICC Software License
+    Copyright:  (c) see Software License
 
  * <b>
  * This version of the header file corresponds to the profile
@@ -166,7 +166,7 @@ authorization from SunSoft Inc.
 #ifndef icPROFILEHEADER_H
 #define icPROFILEHEADER_H
 
-#if !defined(ICCCONFIG_h)
+#if !defined(_ICCCONFIG_h)
     #error Include IccProfLibConf.h before this file
 #endif
 
@@ -320,18 +320,23 @@ typedef double icFloat64Number;
 /** 16-bit unicode characters **/
 typedef icUInt16Number icUnicodeChar;
 
-#define icDataTypeMask 0x0000ffff
-#define icCompressedData 0x00010000
-
 /*------------------------------------------------------------------------*/
 
-typedef enum {     /* Used in dataType Tags */
+// This is actually a bitfield, be careful when defining new values
+typedef enum : uint32_t {     /* Used in dataType Tags */
   icAsciiData                             = 0x0000,
   icBinaryData                            = 0x0001,
   icUtfData                               = 0x0002,
+  
+  icDataTypeMask                          = 0x0000ffff,
+  icCompressedData                        = 0x00010000,
+  
   icCompressedAsciiData                   = icCompressedData|icAsciiData,
   icCompressedBinaryData                  = icCompressedData|icBinaryData,
   icCompressedUtfData                     = icCompressedData|icUtfData,
+  
+/* Convenience Enum Definitions - Not defined in ICC specification */
+  icMaxDataBlockType                      = 0xFFFFFFFF,
 } icDataBlockType;
 
 
@@ -477,18 +482,18 @@ typedef enum {
 
 /* Private tags*/
     icSigEmbeddedV5ProfileTag              = 0x49434335,  /* 'ICC5' */
+    
+/* Convenience Enum Definitions - Not defined in ICC specification */
+    icSigUnknownTag                        = 0x3f3f3f3f,  /* '????' */
+    icMaxEnumTag                           = 0xFFFFFFFF,
 } icTagSignature;
-
-/** Convenience Enum Definitions - Not defined in ICC specification*/
-#define icSigUnknownTag    ((icTagSignature) 0x3f3f3f3f)  /* '????' */
-#define icMaxEnumTag       ((icTagSignature) 0xFFFFFFFF)
-
 
 
 /**
  * technology signature descriptions
  */
 typedef enum {
+    icSigUndefined                      = 0x00000000,
     icSigDigitalCamera                  = 0x6463616D,  /* 'dcam' */
     icSigFilmScanner                    = 0x6673636E,  /* 'fscn' */
     icSigReflectiveScanner              = 0x7273636E,  /* 'rscn' */
@@ -515,10 +520,9 @@ typedef enum {
     icSigMotionPictureFilmRecorder      = 0x6D706672,  /* 'mpfr' */
     icSigDigitalMotionPictureCamera     = 0x646D7063,  /* 'dmpc' */
     icSigDigitalCinemaProjector         = 0x64636A70,  /* 'dcpj' */
+    icMaxEnumTechnology                 = 0xFFFFFFFF,
 } icTechnologySignature;
 
-/** Convenience Enum Definition - Not defined in ICC specification*/
-#define icMaxEnumTechnology ((icTechnologySignature) 0xFFFFFFFF)
 
 /**
  * type signatures 
@@ -585,11 +589,10 @@ typedef enum {
     icSigEmbeddedProfileType            = 0x49434370,  /* 'ICCp' */
     icSigZipXMLType                     = 0x5a584d4c, /* 'ZXML' used by X-rite for CxF tags*/
 
+/* Convenience Enum Definitions - Not defined in ICC specification */
+    icSigUnknownType                    = 0x3f3f3f3f,  /* '????' */
+    icMaxEnumType                       = 0xFFFFFFFF,
 } icTagTypeSignature;
-
-/** Convenience Enum Definitions - Not defined in ICC specification*/
-#define icSigUnknownType ((icTagTypeSignature) 0x3f3f3f3f)  /* '????' */
-#define icMaxEnumType    ((icTagTypeSignature) 0xFFFFFFFF)
 
 
 /**
@@ -604,11 +607,12 @@ typedef enum {
     icSigProfileInfoStruct              = 0x70696e66,  /* 'pinf' */
     icSigTintZeroStruct                 = 0x746e7430,  /* 'tnt0' */
     icSigUndefinedStruct                = 0x00000000,
+    
+/* Convenience Enum Definitions - Not defined in ICC specification */
+    icSigUnknownStruct                  = 0x3f3f3f3f,  /* '????' */
+    icMaxEnumStruct                     = 0xFFFFFFFF,
 } icStructSignature;
 
-/** Convenience Enum Definitions - Not defined in ICC specification*/
-#define icSigUnknownStruct ((icStructSignature) 0x3f3f3f3f)  /* '????' */
-#define icMaxEnumStruct    ((icStructSignature) 0xFFFFFFFF)
 
 /**
  * Tag Array type signatures
@@ -618,11 +622,11 @@ typedef enum {
     icSigNamedColorArray             = 0x6e6d636c,  /* 'nmcl' */
     icSigColorantInfoArray           = 0x63696e66,  /* 'cinf' */
     icSigUtf8TextTypeArray           = 0x75746638,  /* 'utf8' */
-} icArraySignature;
 
-/** Convenience Enum Definitions - Not defined in ICC specification*/
-#define icSigUnknownArray ((icArraySignature) 0x3f3f3f3f)  /* '????' */
-#define icMaxEnumArray    ((icArraySignature) 0xFFFFFFFF)
+/* Convenience Enum Definitions - Not defined in ICC specification */
+    icSigUnknownArray                = 0x3f3f3f3f,  /* '????' */
+    icMaxEnumArray                   = 0xFFFFFFFF,
+} icArraySignature;
 
 
 /************************************************************************
@@ -663,10 +667,11 @@ typedef enum {
     icSigReflectanceCLUTElemType      = 0x72636c74,  /* 'rclt' */
     icSigEmissionObserverElemType     = 0x656f6273,  /* 'eobs' */
     icSigReflectanceObserverElemType  = 0x726f6273,  /* 'robs' */
+
+/* Convenience Enum Definitions - Not defined in ICC specification */
+    icSigUnknownElemType              = 0x3f3f3f3f,  /* '????' */
+    icMaxEnumElemType                 = 0xFFFFFFFF,
 } icElemTypeSignature;
-/** Convenience Enum Definitions - Not defined in proposal*/
-#define icSigUnknownElemType    ((icElemTypeSignature) 0x3f3f3f3f)  /* '????' */
-#define icMaxEnumElemType       ((icElemTypeSignature) 0xFFFFFFFF)
 
 /*******CIccTagStructure member signatures********/
 
@@ -680,10 +685,12 @@ typedef enum {
   icSigBrdfTransformMbr            = 0x7866726d,  /* 'xfrm' */
   icSigBrdfLightTransformMbr       = 0x6c747866,  /* 'ltxf' */
   icSigBrdfOutputTransformMbr      = 0x6f757478,  /* 'outx' */ /* Note: converts the output of the BRDF model to PCS */
+
+/* Convenience Enum Definitions - Not defined in ICC specification */
+    icSigUnknownBrdfMember         = 0x3f3f3f3f,  /* '????' */
+    icMaxBrdfMember                = 0xFFFFFFFF,
 } icBrdfMemberSignature;
-/** Convenience Enum Definitions - Not defined in proposal*/
-#define icSigUnknownBrdfMember    ((icBrdfMemberSignature) 0x3f3f3f3f)  /* '????' */
-#define icMaxBrdfMember           ((icBrdfMemberSignature) 0xFFFFFFFF)
+
 
 /**
  * BRDF type signatures
@@ -707,6 +714,7 @@ typedef enum {
   icSigBrdfTypeLafortuneColor3Lobe    = 0x4c613331  /* 'La31' */,
 } icSigBRDFType;
 
+
 /**
  * BRDF function signatures
  */
@@ -720,14 +728,15 @@ typedef enum {
 * ColorantInfoStructure (icSigColorantInfoStruct) Member Tag signatures
 */
 typedef enum {
-  icSigCinfNameMbr = 0x6e616d65, /* 'name' */
-  icSigCinfLocalizedNameMbr = 0x6c636e6d, /* 'lcnm' */
-  icSigCinfPcsDataMbr = 0x70637320, /* 'pcs ' */
-  icSigCinfSpectralDataMbr = 0x73706563, /* 'spec' */
+  icSigCinfNameMbr              = 0x6e616d65, /* 'name' */
+  icSigCinfLocalizedNameMbr     = 0x6c636e6d, /* 'lcnm' */
+  icSigCinfPcsDataMbr           = 0x70637320, /* 'pcs ' */
+  icSigCinfSpectralDataMbr      = 0x73706563, /* 'spec' */
+
+/* Convenience Enum Definitions - Not defined in ICC specification */
+    icSigCinfUnknownMbr         = 0x3f3f3f3f,  /* '????' */
+    icMaxCinfMbr                = 0xFFFFFFFF,
 } icColorantInfoMemberSignature;
-/** Convenience Enum Definitions - Not defined in proposal*/
-#define icSigCinfUnknownMbr    ((icColorantInfoMemberSignature) 0x3f3f3f3f)  /* '????' */
-#define icMaxCinfMbr           ((icColorantInfoMemberSignature) 0xFFFFFFFF)
 
 
 /**
@@ -735,10 +744,10 @@ typedef enum {
 */
 typedef enum {
   icSigCeptBluePrimaryXYZMbr                = 0x6258595a,  /* bXYZ' */
-  icSigCeptGreenPrimaryXYZMbr	              = 0x6758595a,  /* gXYZ' */
+  icSigCeptGreenPrimaryXYZMbr	            = 0x6758595a,  /* gXYZ' */
   icSigCeptRedPrimaryXYZMbr                 = 0x7258595a,  /* rXYZ' */
-  icSigCeptTransferFunctionMbr              = 0x66756e63, /* func */
-  icSigCeptInverseTransferFunctionMbr       = 0x69666e63, /* ifnc */
+  icSigCeptTransferFunctionMbr              = 0x66756e63,  /* func */
+  icSigCeptInverseTransferFunctionMbr       = 0x69666e63,  /* ifnc */
   icSigCeptLumaChromaMatrixMbr              = 0x6c6d6174,  /* lmat' */
   icSigCeptWhitePointLuminanceMbr           = 0x776c756d,  /* wlum' */
   icSigCeptWhitePointChromaticityMbr        = 0x7758595a,  /* wXYZ' */
@@ -756,10 +765,11 @@ typedef enum {
   icSigCeptMediumWhitePointChromaticityMbr  = 0x6d777063,  /* mwpc' */
   icSigCeptMediumBlackPointLuminanceMbr     = 0x6d62706c,  /* mbpl' */
   icSigCeptMediumBlackPointChromaticityMbr  = 0x6d627063,  /* mbpc' */
+
+/* Convenience Enum Definitions - Not defined in proposal*/
+  icSigCeptUnknownMbr                       = 0x3f3f3f3f,  /* '????' */
+  icMaxCeptMbr                              = 0xFFFFFFFF,
 } icColorEncodingParamsMemberSignature;
-/** Convenience Enum Definitions - Not defined in proposal*/
-#define icSigCeptUnknownMbr    ((icColorEncodingParamsMemberSignature) 0x3f3f3f3f)  /* '????' */
-#define icMaxCeptMbr           ((icColorEncodingParamsMemberSignature) 0xFFFFFFFF)
 
 
 /**
@@ -772,10 +782,12 @@ typedef enum {
   icSigMeasIlluminantMbr       = 0x6d696c6c, /* 'mill' */
   icSigMeasIlluminantRangeMbr  = 0x6d697772, /* 'miwr' */
   icSigMeasModeMbr             = 0x6d6d6f64, /* 'mmod' */
+
+/* Convenience Enum Definitions - Not defined in proposal*/
+  icSigMeasUnknownMbr          = 0x3f3f3f3f,  /* '????' */
+  icMaxMeasMbr                 = 0xFFFFFFFF,
 } icMeasurementInfoMemberSignature;
-/** Convenience Enum Definitions - Not defined in proposal*/
-#define icSigMeasUnknownMbr    ((icMeasurementInfoMemberSignature) 0x3f3f3f3f)  /* '????' */
-#define icMaxMeasMbr           ((icMeasurementInfoMemberSignature) 0xFFFFFFFF)
+
 
 
 /**
@@ -795,10 +807,11 @@ typedef enum {
   icSigNmclSpectralOverBlackMbr      = 0x73706362,  /* 'spcb' */
   icSigNmclSpectralOverGrayMbr       = 0x73706367,  /* 'spcg' */
   icSigNmclTintMbr                   = 0x74696e74,  /* 'tint' */
+
+/* Convenience Enum Definitions - Not defined in proposal*/
+  icSigNmclUnknownMbr                = 0x3f3f3f3f,  /* '????' */
+  icMaxNmclMbr                       = 0xFFFFFFFF,
 } icNamedColorlMemberSignature;
-/** Convenience Enum Definitions - Not defined in proposal*/
-#define icSigNmclUnknownMbr    ((icNamedColorlMemberSignature) 0x3f3f3f3f)  /* '????' */
-#define icMaxNmclMbr           ((icNamedColorlMemberSignature) 0xFFFFFFFF)
 
 
 /**
@@ -814,10 +827,11 @@ typedef enum {
   icSigPinfModelSigMbr         = 0x6d6f6420, /* 'mod ' */
   icSigPinfRenderTransformMbr  = 0x7274726e, /* 'rtrn' */
   icSigPinfTechnologyMbr       = 0x74656368, /* 'tech' */
+
+/* Convenience Enum Definitions - Not defined in proposal*/
+  icSigPinfUnknownMbr          = 0x3f3f3f3f,  /* '????' */
+  icMaxPinfMbr                 = 0xFFFFFFFF,
 } icProfileInfoMemberSignature;
-/** Convenience Enum Definitions - Not defined in proposal*/
-#define icSigPinfUnknownMbr    ((icProfileInfoMemberSignature) 0x3f3f3f3f)  /* '????' */
-#define icMaxPinfMbr           ((icProfileInfoMemberSignature) 0xFFFFFFFF)
 
 
 /**
@@ -829,10 +843,11 @@ typedef enum {
   icSigTnt0SpectralDataMbr      = 0x73706563,  /* 'spec' */
   icSigTnt0SpectralOverBlackMbr = 0x73706362,  /* 'spcb' */
   icSigTnt0SpectralOverGrayMbr  = 0x73706367,  /* 'spcg' */
+
+/* Convenience Enum Definitions - Not defined in proposal*/
+  icSigTnt0UnknownMbr           = 0x3f3f3f3f,  /* '????' */
+  icMaxTnt0Mbr                  = 0xFFFFFFFF,
 } icTintZeroMemberSignature;
-/** Convenience Enum Definitions - Not defined in proposal*/
-#define icSigTnt0UnknownMbr    ((icTintZeroMemberSignature) 0x3f3f3f3f)  /* '????' */
-#define icMaxTnt0Mbr           ((icTintZeroMemberSignature) 0xFFFFFFFF)
 
 
 /** 
@@ -893,18 +908,8 @@ typedef enum {
 
     icSigSrcMCSChannelData              = 0x6d630000,  /* "mc0000" */
     /*Note: "mc0001" through "mcFFFF" are also valid signatures defined using macro icNColorSpaceSig()*/
-
-} icColorSpaceSignature;
-
-/** Convenience Enum Definitions - Not defined in ICC specification*/
-#define icSigGamutData      ((icColorSpaceSignature) 0x67616D74)  /* 'gamt' */
-#define icSigBRDFParameters ((icColorSpaceSignature) 0x62700000)  /* "bp0000" */
-#define icSigBRDFDirect     ((icColorSpaceSignature) 0x62640000)  /* "bd0000" */
-#define icSigUnknownData    ((icColorSpaceSignature) 0x3f3f3f3f)  /* '????' */
-#define icMaxEnumData       ((icColorSpaceSignature) 0xFFFFFFFF)
-
-/** icSpectralColorSignature enumerations */
-typedef enum {
+    
+    
     icSigNoSpectralData                 = 0x00000000,
     icSigReflectanceSpectralData        = 0x72730000, /* "rs0000" */
     /*Note: "rs0001" through "rsFFFF" are also valid signatures defined using macro icSpectralColorSpaceSig()*/
@@ -921,12 +926,33 @@ typedef enum {
     icSigSparseMatrixReflectanceData    = 0x736D0000, /* "sm0000" */
     /*Note: "sm0001" through "smFFFF" are also valid signatures defined using macro icSpectralColorSpaceSig(*)*/
 
-} icSpectralColorSignature;
 
-typedef enum {
+/**
+* Additional convenience color space signatures to distinguish between device
+* encoding and PCS encoding.
+*
+* Device encoding of these color spaces is left to the device to define.
+*/
+    icSigDevLabData = 0x644C6162,  /* 'dLab' */
+    icSigDevXYZData = 0x6458595A,  /* 'dXYZ' */
+
+/* Convenience Enum Definitions - Not defined in ICC specification */
+    icSigGamutData = 0x67616D74,  /* 'gamt' */
+    icSigBRDFParameters  = 0x62700000,  /* "bp0000" */
+    icSigBRDFDirect = 0x62640000,  /* "bd0000" */
+    icSigUnknownData = 0x3f3f3f3f,  /* '????' */
+    icMaxEnumData = 0xFFFFFFFF,
+
+} icColorSpaceSignature;
+
+
+typedef enum : icUInt32Number {
   icSigNoMCSData                 = 0x00000000,
   icSigMCSData                   = 0x6d630000,  /* "mc0000" */
-  /*Note: "nc0001" through "ncFFFF" are also valid signatures defined using macro icNColorSpaceSig()*/
+  /*Note: "mc0001" through "mcFFFF" are also valid signatures defined using macro icNColorSpaceSig()*/
+  icSigMCSDataEnd                = 0x6d63FFFF,   // provide clues to UBSan
+
+  icSigMCSMaxEnumData            = 0xFFFFFFFF,
 } icMaterialColorSignature;
 
 #define icGetColorSpaceType(sig) ((icColorSpaceSignature)(((icUInt32Number)sig)&0xffff0000))
@@ -960,11 +986,10 @@ typedef enum {
     icSigMaterialIdentificationClass    = 0x6D696420,  /* 'mid ' */
     icSigMaterialLinkClass              = 0x6d6c6e6b,  /* 'mlnk' */
     icSigMaterialVisualizationClass     = 0x6d766973,  /* 'mvis' */
+    
+/* Convenience Enum Definition - Not defined in ICC specification */
+    icMaxEnumClass                      = 0xFFFFFFFF,
 } icProfileClassSignature;
-
-/** Convenience Enum Definition - Not defined in ICC specification*/
-#define icMaxEnumClass ((icProfileClassSignature) 0xFFFFFFFF)
-
 
 
 /** Platform Signatures */
@@ -974,16 +999,17 @@ typedef enum {
     icSigSolaris                        = 0x53554E57,  /* 'SUNW' */
     icSigSGI                            = 0x53474920,  /* 'SGI ' */
     icSigTaligent                       = 0x54474E54,  /* 'TGNT' */
-    icSigUnknownPlatform                 = 0x00000000
+    icSigUnknownPlatform                = 0x00000000,
+    
+/* Convenience Enum Definition - Not defined in ICC specification */
+    icMaxEnumPlatform                   = 0xFFFFFFFF,
 } icPlatformSignature;
-
-/** Convenience Enum Definition - Not defined in ICC specification*/
-#define icMaxEnumPlatform ((icPlatformSignature) 0xFFFFFFFF)
 
 
 /** CMM signatures from the signature registry (as of Mar 6, 2018) */
 typedef enum {
     icSigAdobe                          = 0x41444245,  /* 'ADBE' */
+    icSigMicrosoftCMM                   = 0x4D534654,  /* 'MSFT' */
     icSigAgfa                           = 0x41434D53,  /* 'ACMS' */
     icSigApple                          = 0x6170706C,  /* 'appl' */
     icSigColorGear                      = 0x43434D53,  /* 'CCMS' */
@@ -996,6 +1022,8 @@ typedef enum {
     icSigArgyllCMS                      = 0x6172676C,  /* 'argl' */
     icSigLogoSync                       = 0x44676f53,  /* 'LgoS' */
     icSigHeidelberg                     = 0x48444d20,  /* 'HDM ' */
+    icSigLinoColor                      = 0x4C696E6F,  /* 'Lino' */
+    icSigMonaco                         = 0x6D6E636F,  /* 'mnco' */
     icSigLittleCMS                      = 0x6C636D73,  /* 'lcms' */
     icSigKodak                          = 0x4b434d53,  /* 'KCMS' */
     icSigKonicaMinolta                  = 0x4d434d44,  /* 'MCML' */
@@ -1004,6 +1032,7 @@ typedef enum {
     icSigOnyxGraphics                   = 0x4f4e5958,  /* 'ONYX' */
     icSigRefIccMAX                      = 0x52494343,  /* 'RIMX' */
     icSigDemoIccMAX                     = 0x44494d58,  /* 'DIMX' */
+    icSigIccDEV                         = 0x49434344,  /* 'ICCD' */
     icSigRolfGierling                   = 0x52474d53,  /* 'RGMS' */
     icSigSampleICC                      = 0x53494343,  /* 'SICC' */
     icSigToshiba                        = 0x54434D4D,  /* 'TCMM' */
@@ -1012,18 +1041,19 @@ typedef enum {
     icSigWareToGo                       = 0x57544720,  /* 'WTG ' */
     icSigZoran                          = 0x7a633030,  /* 'zc00' */
     icSigUnknownCmm                     = 0x00000000,
+    
+/* Convenience Enum Definition - Not defined in ICC specification */
+    icMaxEnumCmm                   = 0xFFFFFFFF,
 } icCmmSignature;
-/** Convenience Enum Definition - Not defined in ICC specification*/
-#define icMaxEnumCmm ((icCmmSignature) 0xFFFFFFFF)
 
 
 /** Rendering Intent Gamut Signatures */
 typedef enum {
     icSigPerceptualReferenceMediumGamut = 0x70726d67,  /* 'prmg' */
+    
+/* Convenience Enum Definition - Not defined in ICC specification */
+    icMaxEnumReferenceMediumGamut                   = 0xFFFFFFFF,
 } icReferenceMediumGamutSignature;
-
-/** Convenience Enum Definition - Not defined in ICC specification*/
-#define icMaxEnumReferenceMediumGamut ((icReferenceMediumGamutSignature) 0xFFFFFFFF)
 
 
 /** Colorimetric Intent Image State Gamut Signatures */
@@ -1033,10 +1063,10 @@ typedef enum {
   icSigFocalPlaneColorimetryEstimates        = 0x66706365,  /* 'fpce' */
   icSigReflectionHardcopyOriginalColorimetry = 0x72686F63,  /* 'rhoc' */
   icSigReflectionPrintOutputColorimetry      = 0x72706F63,  /* 'rpoc' */
+    
+/* Convenience Enum Definition - Not defined in ICC specification */
+    icMaxEnumColorimetricIntentImageState    = 0xFFFFFFFF,
 } icColorimetricIntentImageStateSignature;
-
-/** Convenience Enum Definition - Not defined in ICC specification*/
-#define icMaxEnumColorimetricIntentImageState ((icColorimetricIntentImageStateSignature) 0xFFFFFFFF)
 
 
 /**
@@ -1045,10 +1075,10 @@ typedef enum {
 typedef enum {
     icSigFormulaCurveSeg              = 0x70617266,  /* 'parf' */
     icSigSampledCurveSeg              = 0x73616D66,  /* 'samf' */
+    
+/* Convenience Enum Definition - Not defined in ICC specification */
+    icMaxCurveSegSignature            = 0xFFFFFFFF,
 } icCurveSegSignature;
-
-/** Convenience Enum Definition - Not defined in ICC specification*/
-#define icMaxCurveSegSignature ((icCurveSegSignature) 0xFFFFFFFF)
 
 /**
  * MPE Curve Set Curve signature
@@ -1057,10 +1087,11 @@ typedef enum {
     icSigSegmentedCurve               = 0x63757266,  /* 'curf' */
     icSigSingleSampledCurve           = 0x736e6766,  /* 'sngf' */
     icSigSampledCalculatorCurve       = 0x636c6366,  /* 'clcf' */
+    
+/* Convenience Enum Definition - Not defined in ICC specification */
+    icMaxCurveElemSignature           = 0xFFFFFFFF,
 } icCurveElemSignature;
 
-/** Convenience Enum Definition - Not defined in ICC specification*/
-#define icMaxCurveElemSignature ((icCurveElemSignature) 0xFFFFFFFF)
 
 /** Enum for defining type of Single Sampled Curve**/
 typedef enum {
@@ -1075,10 +1106,10 @@ typedef enum {
  */
 typedef enum {
   icSigToneMapFunction = 0x6d617066,  /* 'mapf' */
+    
+/* Convenience Enum Definition - Not defined in ICC specification */
+    icMaxToneFunctionSignature           = 0xFFFFFFFF,
 } icToneFunctionSignature;
-
-/** Convenience Enum Definition - Not defined in ICC specification*/
-#define icMaxToneFunctionSignature ((icCurveElemSignature) 0xFFFFFFFF)
 
 
 /** Enum to identify single segment curve / clut2 element storage type **/ 
@@ -1096,7 +1127,7 @@ typedef enum {
 
 typedef icSignature icAcsSignature;
 
-/** Convenience Definition - Not defined in ICC specification*/
+/* Convenience Definition - Not defined in ICC specification */
 #define icSigAcsZero ((icAcsSignature) 0x00000000)
 
 /**
@@ -1117,12 +1148,11 @@ typedef icSignature icAcsSignature;
 typedef enum {
     icFlare0                            = 0x00000000,  /* 0% flare */
     icFlare100                          = 0x00000001,  /* 100% flare */
+
+/* Convenience Enum Definitions - Not defined in ICC specification */
+  icMaxEnumFlare                        = 0xFFFFFFFF,
+  icMaxFlare                            = 0xFFFFFFFF, /* as defined by earlier versions */
 } icMeasurementFlare;
-
-/** Convenience Enum Definition - Not defined in ICC specification*/
-#define icMaxEnumFlare ((icMeasurementFlare) 0xFFFFFFFF)
-#define icMaxFlare     ((icMeasurementFlare) 0xFFFFFFFF) /* as defined by earlier versions */
-
 
 
 /** Measurement Geometry, used in the measurmentType tag */
@@ -1130,12 +1160,11 @@ typedef enum {
     icGeometryUnknown                   = 0x00000000,  /* Unknown geometry */
     icGeometry045or450                  = 0x00000001,  /* 0/45, 45/0 */
     icGeometry0dord0                    = 0x00000002,  /* 0/d or d/0 */
+
+/* Convenience Enum Definitions - Not defined in ICC specification */
+    icMaxEnumGeometry                   = 0xFFFFFFFF,
+    icMaxGeometry                       = 0xFFFFFFFF,
 } icMeasurementGeometry;
-
-/** Convenience Enum Definition - Not defined in ICC specification*/
-#define icMaxEnumGeometry ((icMeasurementGeometry) 0xFFFFFFFF)
-#define icMaxGeometry     ((icMeasurementGeometry) 0xFFFFFFFF)
-
 
 
 /** Rendering Intents, used in the profile header */
@@ -1146,12 +1175,11 @@ typedef enum {
     icSaturation                        = 2,
     icAbsoluteColorimetric              = 3,
     icAbsolute                          = 3,
+
+/* Convenience Enum Definitions - Not defined in ICC specification */
+    icUnknownIntent                     = 0x3f3f3f3f,  /* '????' */
+    icMaxEnumIntent                     = 0xFFFFFFFF,
 } icRenderingIntent;
-
-/** Convenience Enum Definitions - Not defined in ICC specification*/
-#define icUnknownIntent ((icRenderingIntent) 0x3f3f3f3f)  /* '????' */
-#define icMaxEnumIntent ((icRenderingIntent) 0xFFFFFFFF)
-
 
 
 /** Different Spot Shapes currently defined, used for screeningType */
@@ -1164,31 +1192,31 @@ typedef enum {
     icSpotShapeLine                     = 5,
     icSpotShapeSquare                   = 6,
     icSpotShapeCross                    = 7,
-} icSpotShape;
 
-/** Convenience Enum Definition - Not defined in ICC specification*/
-#define icMaxEnumSpot ((icSpotShape)  0xFFFFFFFF)
+/* Convenience Enum Definitions - Not defined in ICC specification */
+    icMaxEnumSpot                       = 0xFFFFFFFF,
+} icSpotShape;
 
 
 
 /** Standard Observer, used in the measurmentType tag */
 typedef enum {
     icStdObsUnknown                     = 0x00000000,  /* Unknown observer */
+    icStdObsCustom                      = 0x00000000,  /* Custom observer */
     icStdObs1931TwoDegrees              = 0x00000001,  /* 1931 two degrees */
     icStdObs1964TenDegrees              = 0x00000002,  /* 1961 ten degrees */
+
+/* Convenience Enum Definitions - Not defined in ICC specification */
+    icMaxEnumStdObs                     = 0xFFFFFFFF,
+    icMaxStdObs                         = 0xFFFFFFFF, /* as defined by earlier versions */
 } icStandardObserver;
-
-#define icStdObsCustom icStdObsUnknown
-
-/** Convenience Enum Definition - Not defined in ICC specification*/
-#define icMaxEnumStdObs ((icStandardObserver) 0xFFFFFFFF)
-#define icMaxStdObs     ((icStandardObserver) 0xFFFFFFFF) /* as defined by earlier versions */
 
 
 
 /** Pre-defined illuminants, used in measurement and viewing conditions type */
 typedef enum {
     icIlluminantUnknown                 = 0x00000000,
+    icIlluminantCustom                 = 0x00000000,
     icIlluminantD50                     = 0x00000001,
     icIlluminantD65                     = 0x00000002,
     icIlluminantD93                     = 0x00000003,
@@ -1213,14 +1241,11 @@ typedef enum {
     icIlluminantF10                     = 0x00000014,
     icIlluminantF11                     = 0x00000015,
     icIlluminantF12                     = 0x00000016,
+
+/* Convenience Enum Definitions - Not defined in ICC specification */
+    icMaxEnumIlluminant                 = 0xFFFFFFFF,
+    icMaxEnumIluminant                  = 0xFFFFFFFF, /* as defined by earlier versions */
 } icIlluminant;
-
-#define icIlluminantCustom icIlluminantUnknown
-
-/** Convenience Enum Definitions - Not defined in ICC specification*/
-#define icMaxEnumIlluminant ((icIlluminant) 0xFFFFFFFF)
-#define icMaxEnumIluminant  ((icIlluminant) 0xFFFFFFFF)   /* as defined by earlier versions */
-
 
 
 /** 
@@ -1284,11 +1309,10 @@ typedef enum {
   icSigDNP                             = 0x444E2050, /* 'DN P' */
   icSigDNN                             = 0x444E4E20, /* 'DNN ' */
   icSigDNNP                            = 0x444E4E50, /* 'DNNP' */
+
+/* Convenience Enum Definitions - Not defined in ICC specification */
+    icMaxEnumMeasurmentUnitSig         = 0xFFFFFFFF,
 } icMeasurementUnitSig;
-
-/** Convenience Enum Definition - Not defined in ICC specification*/
-#define icMaxEnumMeasurmentUnitSig ((icMeasurementUnitSig) 0xffffffff)
-
 
 
 /** Colorant and Phosphor Encodings used in chromaticity type */
@@ -1298,10 +1322,10 @@ typedef enum {
   icColorantSMPTE                       = 0x0002, /* SMPTE RP145-1994 */
   icColorantEBU                         = 0x0003, /* EBU Tech.3213-E */
   icColorantP22                         = 0x0004, /* P22 */
-} icColorantEncoding;
 
-/** Convenience Enum Definition - Not defined in ICC specification*/
-#define icMaxEnumColorant ((icColorantEncoding) 0xFFFF)
+/* Convenience Enum Definitions - Not defined in ICC specification */
+  icMaxEnumColorant                     = 0xFFFF,
+} icColorantEncoding;
 
 
 /**
@@ -1341,22 +1365,28 @@ typedef enum {
                                                   are >= 256 */
 } icDMHalftoneType;
 
-typedef enum {
+typedef enum : uint16_t {
   icSparseMatrixUInt8                = 0x0001,
   icSparseMatrixUInt16               = 0x0002,
   icSparseMatrixFloat16              = 0x0003,
   icSparseMatrixFloat32              = 0x0004,
+
+/* Convenience Enum Definitions - Not defined in ICC specification */
+  icSparseMatrixFloatNum            = 0x0000,//Use internal icFloatNumber encoding
+  icSparseMatrixMaximum             = 0xffff,
 } icSparseMatrixType;
 
 
-/* Image encoding type encodings for embeddedHeightImageType and embeddedNormalImageType*/
-typedef enum {
+/** Image encoding type encodings for embeddedHeightImageType and embeddedNormalImageType*/
+/* Despite looking like a bool, it must be capable of holding an unsigned 32 bit value as written in profiles */
+typedef enum : icUInt32Number {
   icPngImageType                     = 0x0000,
   icTiffImageType                    = 0x0001,
+  
+/* Convenience Enum Definitions - Not defined in ICC specification */
+  icImageTypeMaximum                 = 0xffffffff,      /* maximum to define range */
 } icImageEncodingType;
 
-/** Convenience Enum Definition - Not defined in ICC specification*/
-#define icSparseMatrixFloatNum ((icSparseMatrixType)0x0000) //Use internal icFloatNumber encoding
 
 /**
 *------------------------------------------------------------------------
@@ -2059,7 +2089,7 @@ typedef struct {
     icSignature                 creator;          /* Profile creator */
     icProfileID                 profileID;        /* Profile ID using RFC 1321 MD5 128bit fingerprinting */
 /*Fields New for V5*/
-    icSpectralColorSignature    spectralPCS;      /* Spectral colour space signature */
+    icColorSpaceSignature       spectralPCS;      /* Spectral colour space signature */
     icSpectralRange             spectralRange;    /* Start, end, and steps for spectral PCS */
     icSpectralRange             biSpectralRange;  /* Start, end, and steps for bi-spectral PCS */
     icMaterialColorSignature    mcs;              /* Material Connection Space */
