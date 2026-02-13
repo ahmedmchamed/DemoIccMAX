@@ -11,15 +11,14 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libgcc -static-libstdc++ -static
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# These subdirectories have their own cmake files that specify the lib's name, used in target_link_libraries() below
 add_subdirectory("${PROJECT_SOURCE_DIR}/IccProfLib")
 add_subdirectory("${PROJECT_SOURCE_DIR}/Utils")
 
 # Create ConvertBulk exe and link all required code
 add_executable(ConvertBulk ConvertBulk.cpp)
-target_link_libraries(ConvertBulk PUBLIC IccProfLib)
-target_link_libraries(ConvertBulk PUBLIC Utils)
+target_link_libraries(ConvertBulk PUBLIC IccProfLib Utils)
 
 # Create Convert exe and link all required code
 add_executable(ConvertSingle ConvertSingle.cpp)
-target_link_libraries(ConvertSingle PUBLIC IccProfLib)
-target_link_libraries(ConvertSingle PUBLIC Utils)
+target_link_libraries(ConvertSingle PUBLIC IccProfLib Utils)
